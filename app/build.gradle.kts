@@ -41,6 +41,7 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.compose.material3.window.size.class1)
     val roomVersion = "2.6.1"
     val lifecycleVersion = "2.8.6"
     val activityCompose = "1.9.3"
