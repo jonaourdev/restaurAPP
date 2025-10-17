@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui
+package com.example.restaurapp.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -9,53 +9,58 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.restaurapp.R
-
-
+import com.example.restaurapp.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(){
-    Scaffold (
+fun HomeScreen(
+    titleSize: Int,
+    imageHeight: Dp,
+    spacing: Dp
+){
+    Scaffold(
         topBar = {
-            TopAppBar(title = {Text("Level-Up Gamer")})
+            TopAppBar(title = { Text("Level-Up Gamer", fontSize = titleSize.sp) })
         }
     ) { innerPadding ->
-        Column (
-            modifier = Modifier
+        Column(
+            modifier = Modifier.Companion
                 .padding(innerPadding)
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(spacing),
+            horizontalAlignment = Alignment.Companion.CenterHorizontally
         ) {
-            Text(text = "¡Bienvenido!")
-            Button(onClick = {/*ACCION A FUTURO*/}) {
+            Text(
+                text = "¡Bienvenido a RestaurApp!",
+                color = MaterialTheme.colorScheme.primary
+            )
+            Button(onClick = {/*ACCION FUTURA*/ }) {
                 Text("Presióname")
             }
             Image(
-                painter = painterResource(id=R.drawable.logo),
+                painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo App",
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .fillMaxWidth()
-                    .height(150.dp),
-                contentScale = ContentScale.Fit
+                    .height(imageHeight),
+                contentScale = ContentScale.Companion.Fit
             )
         }
     }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview(){
-    HomeScreen()
 }
