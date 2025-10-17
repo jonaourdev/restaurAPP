@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui.screens
+package com.example.restaurapp.ui.screens.homeScreen
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -11,21 +11,21 @@ import com.example.restaurapp.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenMedium(
+fun HomeScreenCompact(
     navController: NavController,
     viewModel: MainViewModel = viewModel()
 ){
     HomeScreen(
-        titleSize = 24,
-        imageHeight = 200.dp,
-        spacing = 24.dp,
+        titleSize = 20,
+        imageHeight = 150.dp,
+        spacing = 16.dp,
         navController = navController
     )
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewMedium(){
+fun PreviewCompact(){
     val navController = rememberNavController()
-    HomeScreenMedium(navController = rememberNavController())
+    HomeScreenCompact(navController = navController)
 }

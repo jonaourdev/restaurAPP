@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui.screens
+package com.example.restaurapp.ui.screens.homeScreen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -70,7 +70,7 @@ fun HomeScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Level-Up Gamer", fontSize = titleSize.sp) },
+                    title = { Text("RestaurAPP", fontSize = titleSize.sp) },
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch { drawerState.open() }

@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui.screens
+package com.example.restaurapp.ui.screens.homeScreen
 
 import androidx.compose.runtime.Composable
 import com.example.restaurapp.ui.utils.obtenerWindowSizeClass
