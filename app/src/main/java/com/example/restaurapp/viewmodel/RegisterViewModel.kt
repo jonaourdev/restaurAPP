@@ -23,6 +23,7 @@ data class FormRegister(
 
 class RegisterViewModel(private val repo: RegisterRepository) : ViewModel() {
 
+    // Lista registros
     val registros: StateFlow<List<RegisterEntity>> =
         repo.observarRegistros().stateIn(
             scope = viewModelScope,

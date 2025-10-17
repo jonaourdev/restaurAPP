@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui
+package com.example.restaurapp.ui.screens.registerScreen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,11 +34,12 @@ fun RegisterScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("RestaurApp") })
+                title = { Text("Registro") }
+            )
         }
     ) { padding ->
         Column(
-            Modifier.fillMaxSize().padding(padding).padding(16.dp),
+            Modifier.Companion.fillMaxSize().padding(padding).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             form.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -48,7 +49,7 @@ fun RegisterScreen(
                 onValueChange = vm::onChangeNombreCompleto,
                 label = { Text("Nombre completo") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.Companion.fillMaxWidth()
             )
 
             OutlinedTextField(
@@ -56,7 +57,7 @@ fun RegisterScreen(
                 onValueChange = vm::onChangeCorreo,
                 label = { Text("Correo") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.Companion.fillMaxWidth()
             )
 
             OutlinedTextField(
@@ -64,12 +65,21 @@ fun RegisterScreen(
                 onValueChange = vm::onChangeContrasenna,
                 label = { Text("Contraseña") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.Companion.fillMaxWidth()
             )
 
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = onSaved, modifier = Modifier.weight(1f)) { Text("Registrarte") }
-                OutlinedButton(onClick = onBack, modifier = Modifier.weight(1f)) { Text("Cancelar") }
+            Row(
+                Modifier.Companion.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onSaved,
+                    modifier = Modifier.Companion.weight(1f)
+                ) { Text("Registrarte") }
+                OutlinedButton(
+                    onClick = onBack,
+                    modifier = Modifier.Companion.weight(1f)
+                ) { Text("Cancelar") }
             }
         }
     }
