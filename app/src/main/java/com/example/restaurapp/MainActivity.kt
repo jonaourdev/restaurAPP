@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.restaurapp.ui.theme.RestaurAppTheme
 import com.example.restaurapp.ui.HomeScreen
+import com.example.restaurapp.ui.RegisterScreen
 import com.example.restaurapp.viewmodel.RegisterViewModel
 import com.example.restaurapp.viewmodel.RegisterViewModelFactory
 
@@ -31,11 +32,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             RestaurAppTheme {
-                Surface (modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background){
-                    HomeScreen()
-                }
+                RegisterScreen(
+                    vm = vmRegister,
+                    onBack = {  }, // Cierra la activity o navega atrás finish()
+                    onSaved = {
+                        vmRegister.guardar() // Llama la lógica de guardado
+                    }
+                )
             }
         }
     }
 }
+
 
