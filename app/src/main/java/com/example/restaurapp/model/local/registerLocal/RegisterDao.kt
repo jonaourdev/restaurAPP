@@ -1,6 +1,12 @@
-package com.example.restaurapp.model.local
+package com.example.restaurapp.model.local.registerLocal
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import com.example.restaurapp.model.local.registerLocal.RegisterEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,7 +21,7 @@ interface RegisterDao {
     @Query("SELECT COUNT(*) FROM registros WHERE correo = :correo")
     suspend fun contarPorCorreo(correo: String): Int
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun insertar(register: RegisterEntity): Long
 
     @Update

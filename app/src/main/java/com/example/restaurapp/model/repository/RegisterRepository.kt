@@ -1,7 +1,7 @@
 package com.example.restaurapp.model.repository
 
-import com.example.restaurapp.model.local.RegisterDao
-import com.example.restaurapp.model.local.RegisterEntity
+import com.example.restaurapp.model.local.registerLocal.RegisterDao
+import com.example.restaurapp.model.local.registerLocal.RegisterEntity
 import kotlinx.coroutines.flow.Flow
 
 class RegisterRepository (private val dao: RegisterDao){

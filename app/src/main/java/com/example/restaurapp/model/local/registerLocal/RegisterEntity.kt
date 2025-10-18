@@ -1,4 +1,4 @@
-package com.example.restaurapp.model.local
+package com.example.restaurapp.model.local.registerLocal
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

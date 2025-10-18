@@ -2,7 +2,7 @@ package com.example.restaurapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.restaurapp.model.local.RegisterEntity
+import com.example.restaurapp.model.local.registerLocal.RegisterEntity
 import com.example.restaurapp.model.repository.RegisterRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -64,13 +64,14 @@ class RegisterViewModel(private val repo: RegisterRepository) : ViewModel() {
             return@launch
         }
 
+        // Validar si existe el mismo correo
         val existeCorreo = repo.existeCorreo(f.correo)
         if (existeCorreo) {
             _form.update { it.copy(error = "El correo ya está registrado.") }
             return@launch
         }
 
-        // Si es correcto → guardar en BD
+        // Si es correcto -> guardar en BD
         repo.guardar(f.id, f.nombreCompleto, f.correo, f.contrasenna)
 
         // Limpiar formulario y eliminar errores
