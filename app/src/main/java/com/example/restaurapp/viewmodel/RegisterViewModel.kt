@@ -30,7 +30,7 @@ class RegisterViewModel(private val repo: RegisterRepository) : ViewModel() {
             initialValue = emptyList()
         )
 
-    // Variable de manejo de estado
+    // Estado del formulario
     private val _form = MutableStateFlow(FormRegister())
     val form: StateFlow<FormRegister> = _form.asStateFlow()
 
@@ -40,15 +40,39 @@ class RegisterViewModel(private val repo: RegisterRepository) : ViewModel() {
     fun onChangeCorreo(v: String) = _form.update { it.copy(correo = v) }
     fun onChangeContrasenna(v: String) = _form.update { it.copy(contrasenna = v) }
 
-    // Registrar usuario
+    // Registrar usuario con validaciones
     fun guardar() = viewModelScope.launch {
         val f = _form.value
-        if (f.nombreCompleto.isBlank() || f.correo.isBlank() || f.contrasenna.isBlank()) {
-            _form.update { it.copy(error = "Completa todos los campos.")
-                return@launch
-            }
-        }
-        repo.guardar(f.id,f.nombreCompleto,f.correo,f.contrasenna)
-    }
 
+        // Validar campos vacíos
+        if (f.nombreCompleto.isBlank() || f.correo.isBlank() || f.contrasenna.isBlank()) {
+            _form.update { it.copy(error = "Completa todos los campos.") }
+            return@launch
+        }
+
+        // Validar formato del correo
+        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
+        if (!emailRegex.matches(f.correo.trim())) {
+            _form.update { it.copy(error = "Ingresa un correo válido.") }
+            return@launch
+        }
+
+        // Validar longitud mínima de contraseña
+        if (f.contrasenna.length < 8) {
+            _form.update { it.copy(error = "La contraseña debe tener al menos 8 caracteres.") }
+            return@launch
+        }
+
+        val existeCorreo = repo.existeCorreo(f.correo)
+        if (existeCorreo) {
+            _form.update { it.copy(error = "El correo ya está registrado.") }
+            return@launch
+        }
+
+        // Si es correcto → guardar en BD
+        repo.guardar(f.id, f.nombreCompleto, f.correo, f.contrasenna)
+
+        // Limpiar formulario y eliminar errores
+        limpiarFormulario()
+    }
 }

@@ -35,6 +35,11 @@ class RegisterRepository (private val dao: RegisterDao){
             )
         }
     }
+
+    suspend fun existeCorreo(correo: String): Boolean {
+        return dao.contarPorCorreo(correo.trim()) > 0
+    }
+
     suspend fun eliminar(register: RegisterEntity) = dao.eliminar(register)
     suspend fun eliminarTodos() = dao.eliminarTodos()
 }
