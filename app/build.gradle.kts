@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
 }
 
 android {
@@ -41,8 +42,7 @@ android {
 
 dependencies {
 
-    implementation(libs.androidx.compose.material3.window.size.class1)
-    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.animation.core.lint)
     val roomVersion = "2.6.1"
     val lifecycleVersion = "2.8.6"
     val activityCompose = "1.9.3"
@@ -52,6 +52,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("androidx.activity:activity-compose:$activityCompose")
@@ -65,9 +66,7 @@ dependencies {
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     /* KAPT AGREGAR */
-
-    implementation("androidx.compose.material:material-icons-extended")
-
+    kapt ("androidx.room:room-compiler:$roomVersion")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
