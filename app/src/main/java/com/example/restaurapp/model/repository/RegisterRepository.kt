@@ -35,6 +35,7 @@ class RegisterRepository (private val dao: RegisterDao){
             )
         }
     }
+    suspend fun obtenerPorCorreo(correo: String) = dao.obtenerPorCorreo(correo)
 
     suspend fun existeCorreo(correo: String): Boolean {
         return dao.contarPorCorreo(correo.trim()) > 0

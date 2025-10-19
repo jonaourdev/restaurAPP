@@ -17,6 +17,8 @@ interface RegisterDao {
 
     @Query("SELECT * FROM registros WHERE id = :id")
     suspend fun obtenerPorId(id: Int): RegisterEntity?
+    @Query("SELECT * FROM registros WHERE correo = :correo LIMIT 1")
+    suspend fun obtenerPorCorreo(correo: String): RegisterEntity?
 
     @Query("SELECT COUNT(*) FROM registros WHERE correo = :correo")
     suspend fun contarPorCorreo(correo: String): Int

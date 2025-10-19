@@ -11,3 +11,7 @@ val Yellow90 = Color(0xFFFFB800)
 val Gray60 = Color(0xFF666666)
 
 val Cream60 = Color(0xFFeeeeee)
+
+val DuocBlue = Color(0xFF3B6B9C)
+
+val DuocYellow = Color(0xFFC0A069)

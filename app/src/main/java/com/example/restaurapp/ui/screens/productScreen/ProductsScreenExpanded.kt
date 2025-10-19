@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui.screen.productScreen
+package com.example.restaurapp.ui.screens.productScreen
 
 
 import androidx.compose.foundation.layout.Arrangement

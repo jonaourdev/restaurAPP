@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui.screen.productScreen
+package com.example.restaurapp.ui.screens.productScreen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -15,6 +15,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.restaurapp.R
+import com.example.restaurapp.ui.theme.DuocBlue
+import com.example.restaurapp.ui.theme.DuocYellow
 import com.example.restaurapp.ui.theme.RestaurAppTheme
 
 
@@ -56,14 +58,14 @@ fun ProductScreenCompact(modifier: Modifier = Modifier) {
             ConceptCard(
                 text = "CONCEPTOS FORMATIVOS",
                 iconRes = R.drawable.laurel,
-                color = Color(0xFFC0A069),
+                color = DuocYellow,
                 modifier = Modifier.weight(1f)
             )
             // Tarjeta 2
             ConceptCard(
                 text = "CONCEPTOS TÉCNICOS",
                 iconRes = R.drawable.capitel,
-                color = Color(0xFF3B6B9C),
+                color = DuocBlue,
                 modifier = Modifier.weight(1f)
             )
         }

@@ -18,7 +18,9 @@ data class FormRegister(
     val nombreCompleto: String = "",
     val correo: String = "",
     val contrasenna: String = "",
-    val error: String? = null
+    val confirmarContrasenna: String = "",
+    val error: String? = null,
+    val success: Boolean = false
 )
 
 class RegisterViewModel(private val repo: RegisterRepository) : ViewModel() {
@@ -37,9 +39,10 @@ class RegisterViewModel(private val repo: RegisterRepository) : ViewModel() {
 
     // Ingreso de datos
     fun limpiarFormulario() = run { _form.value = FormRegister() }
-    fun onChangeNombreCompleto(v: String) = _form.update { it.copy(nombreCompleto = v) }
-    fun onChangeCorreo(v: String) = _form.update { it.copy(correo = v) }
-    fun onChangeContrasenna(v: String) = _form.update { it.copy(contrasenna = v) }
+    fun onChangeNombreCompleto(v: String) = _form.update { it.copy(nombreCompleto = v,) }
+    fun onChangeCorreo(v: String) = _form.update { it.copy(correo = v,) }
+    fun onChangeContrasenna(v: String) = _form.update { it.copy(contrasenna = v,) }
+    fun onChangeConfirmarContrasenna(v: String) = _form.update { it.copy(confirmarContrasenna = v,) }
 
     // Registrar usuario con validaciones
     fun guardar() = viewModelScope.launch {
@@ -47,34 +50,40 @@ class RegisterViewModel(private val repo: RegisterRepository) : ViewModel() {
 
         // Validar campos vacíos
         if (f.nombreCompleto.isBlank() || f.correo.isBlank() || f.contrasenna.isBlank()) {
-            _form.update { it.copy(error = "Completa todos los campos.") }
+            _form.update { it.copy(error = "Completa todos los campos.",) }
             return@launch
         }
 
         // Validar formato del correo
         val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
         if (!emailRegex.matches(f.correo.trim())) {
-            _form.update { it.copy(error = "Ingresa un correo válido.") }
+            _form.update { it.copy(error = "Ingresa un correo válido.",) }
             return@launch
         }
 
         // Validar longitud mínima de contraseña
         if (f.contrasenna.length < 8) {
-            _form.update { it.copy(error = "La contraseña debe tener al menos 8 caracteres.") }
+            _form.update { it.copy(error = "La contraseña debe tener al menos 8 caracteres.",) }
+            return@launch
+        }
+
+        // Validar coincidencia de contraseñas
+        if (f.contrasenna != f.confirmarContrasenna) {
+            _form.update { it.copy(error = "Las contraseñas no coinciden.",) }
             return@launch
         }
 
         // Validar si existe el mismo correo
         val existeCorreo = repo.existeCorreo(f.correo)
         if (existeCorreo) {
-            _form.update { it.copy(error = "El correo ya está registrado.") }
+            _form.update { it.copy(error = "El correo ya está registrado.",) }
             return@launch
         }
 
         // Si es correcto -> guardar en BD
         repo.guardar(f.id, f.nombreCompleto, f.correo, f.contrasenna)
+        // Mostrar éxito y limpiar formulario
+        _form.update { it.copy(success = true, error = null) }
 
-        // Limpiar formulario y eliminar errores
-        limpiarFormulario()
     }
 }
