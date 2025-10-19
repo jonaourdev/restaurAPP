@@ -41,6 +41,8 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.compose.material3.window.size.class1)
+    implementation(libs.androidx.compose.foundation.layout)
     val roomVersion = "2.6.1"
     val lifecycleVersion = "2.8.6"
     val activityCompose = "1.9.3"
@@ -64,7 +66,8 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     /* KAPT AGREGAR */
 
-    implementation("androidx.compose.material3:material3-window-size-class:1.1.0") // Or the latest version
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.compose.material3:material3-window-size-class")
 
 
     // Coroutines

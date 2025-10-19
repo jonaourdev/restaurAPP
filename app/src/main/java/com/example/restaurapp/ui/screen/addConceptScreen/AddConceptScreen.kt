@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui.screen
+package com.example.restaurapp.ui.screen.addConceptScreen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui.screen
+package com.example.restaurapp.ui.screen.addConceptScreen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,34 +22,35 @@ import androidx.compose.ui.unit.dp
 import com.example.restaurapp.ui.theme.RestaurAppTheme
 
 @Composable
-fun AddContentScreenMedium(modifier: Modifier = Modifier) {
+fun AddContentScreenCompact(modifier: Modifier = Modifier) {
     var selectedContentType by remember { mutableStateOf(ContentType.ConceptoTecnico) }
-
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 64.dp, vertical = 16.dp)
+            .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        //Pestañas del tipo de formulario que se desea agregar
+        // pestañas de tipo de concepto
         ContentTypeSelector(
             selectedType = selectedContentType,
             onTypeSelected = { selectedContentType = it }
         )
-        //Tipo de formulario segun la pestaña seleccionada
+
+        // tipo de formulario segun la pestaña
         when (selectedContentType) {
             ContentType.Familia -> FamilyForm()
             ContentType.ConceptoFormativo -> FormativeConceptForm()
             ContentType.ConceptoTecnico -> TechnicalConceptForm()
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(1f)) // Empuja el botón hacia abajo
 
+        // Botón para guardar el concepto
         Button(
-            onClick = { /* Logica para el botón de guardado */ },
+            onClick = { /* Agregar la logica para guardado */ },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
@@ -60,10 +61,10 @@ fun AddContentScreenMedium(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true, widthDp = 840, heightDp = 480)
+@Preview(showBackground = true, name = "AddContent Compact")
 @Composable
-fun AddContentScreenMediumPreview() {
+fun AddContentScreenCompactPreview() {
     RestaurAppTheme {
-        AddContentScreenMedium()
+        AddContentScreenCompact()
     }
 }
