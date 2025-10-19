@@ -64,6 +64,8 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     /* KAPT AGREGAR */
 
+    implementation("androidx.compose.material3:material3-window-size-class:1.1.0") // Or the latest version
+
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
