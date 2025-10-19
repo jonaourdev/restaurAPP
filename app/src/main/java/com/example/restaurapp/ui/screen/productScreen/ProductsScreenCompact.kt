@@ -17,11 +17,12 @@ import androidx.compose.ui.unit.dp
 import com.example.restaurapp.R
 import com.example.restaurapp.ui.theme.RestaurAppTheme
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductScreenCompact(modifier: Modifier = Modifier) {
+//                                                                    // V-- CAMBIO 1 --V
+fun ProductScreenCompact(modifier: Modifier = Modifier,
+                         onNavigateToTechnical: () -> Unit,
+                         onNavigateToFormative: () -> Unit) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -57,35 +58,39 @@ fun ProductScreenCompact(modifier: Modifier = Modifier) {
                 text = "CONCEPTOS FORMATIVOS",
                 iconRes = R.drawable.laurel,
                 color = Color(0xFFC0A069),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onClick = onNavigateToFormative
             )
             // Tarjeta 2
             ConceptCard(
                 text = "CONCEPTOS TÉCNICOS",
                 iconRes = R.drawable.capitel,
                 color = Color(0xFF3B6B9C),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onClick = onNavigateToTechnical // <-- CAMBIO 3: Pasa la acción de navegar
             )
         }
     }
 }
 
-// He movido la tarjeta a su propio Composable para reutilizarla y mantener el código limpio
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConceptCard(
     text: String,
     iconRes: Int,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit // <-- CAMBIO 2
 ) {
     Card(
-        onClick = { /* TODO */ },
-        modifier = modifier.height(180.dp), // Altura fija para consistencia
+        onClick = onClick, // <-- USA EL PARÁMETRO AQUÍ
+        modifier = modifier.height(180.dp),
         colors = CardDefaults.cardColors(containerColor = color)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(8.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -98,7 +103,7 @@ fun ConceptCard(
             Spacer(modifier = Modifier.height(16.dp))
             Icon(
                 painter = painterResource(id = iconRes),
-                contentDescription = null, // Es decorativo
+                contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier.size(40.dp)
             )
@@ -110,6 +115,7 @@ fun ConceptCard(
 @Composable
 fun ProductScreenCompactPreview() {
     RestaurAppTheme {
-        ProductScreenCompact()
+        // La vista previa no necesita navegar, así que le pasamos una acción vacía
+        ProductScreenCompact(onNavigateToTechnical = {}, onNavigateToFormative = {})
     }
 }

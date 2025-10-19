@@ -1,22 +1,13 @@
 package com.example.restaurapp.ui.screen.productScreen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -24,73 +15,78 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.restaurapp.R
-
+import com.example.restaurapp.ui.theme.RestaurAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductScreenMedium(modifier: Modifier = Modifier) {
-    Row(
+// Se añade el parámetro para la navegación
+fun ProductScreenMedium(modifier: Modifier = Modifier,
+                        onNavigateToTechnical: () -> Unit,
+                        onNavigateToFormative: () -> Unit) {
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(32.dp), // Más padding para pantallas más grandes
-        horizontalArrangement = Arrangement.spacedBy(32.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Columna Izquierda: Búsqueda y Título
-        Column(modifier = Modifier.weight(0.8f)) {
+        // Título y barra de búsqueda en una fila
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(
                 text = "BLOQUES DE CONOCIMIENTO",
-                style = MaterialTheme.typography.headlineMedium, // Texto más grande
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.width(32.dp))
             OutlinedTextField(
                 value = "",
                 onValueChange = {},
-                label = { Text("Buscar en el diccionario...") },
+                label = { Text("Buscar...") },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Buscar") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
                 shape = CircleShape
             )
         }
 
-        // Columna Derecha: Tarjetas
-        Row(
-            modifier = Modifier.weight(1.2f),
-            horizontalArrangement = Arrangement.spacedBy(24.dp)
+        Spacer(Modifier.height(32.dp))
+
+        // Tarjetas apiladas verticalmente
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Reutilizamos la misma tarjeta, pero ahora es más grande
-            // Tarjeta de Conceptos Formativos
+            // Tarjeta 1
             Card(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFC0A069)) // Color dorado
+                onClick = onNavigateToFormative,
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFC0A069))
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(vertical = 24.dp, horizontal = 8.dp)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                Row(
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Text("CONCEPTOS FORMATIVOS", color = Color.White, textAlign = TextAlign.Center)
+                    Text("CONCEPTOS FORMATIVOS", color = Color.White, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(16.dp))
                     Icon(painterResource(id = R.drawable.laurel), contentDescription = null, tint = Color.White)
                 }
             }
-            // Tarjeta de Conceptos Técnicos
+            // Tarjeta 2 - Con la acción de navegar
             Card(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF3B6B9C)) // Color azul
+                onClick = onNavigateToTechnical, // <-- Se pasa la acción de navegación aquí
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF3B6B9C))
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(vertical = 24.dp, horizontal = 8.dp)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                Row(
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Text("CONCEPTOS TÉCNICOS", color = Color.White, textAlign = TextAlign.Center)
+                    Text("CONCEPTOS TÉCNICOS", color = Color.White, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(16.dp))
                     Icon(painterResource(id = R.drawable.capitel), contentDescription = null, tint = Color.White)
                 }
             }
@@ -98,8 +94,11 @@ fun ProductScreenMedium(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+@Preview(showBackground = true, widthDp = 840, heightDp = 480)
 @Composable
-fun ProductScreenMediumPreview(){
-    ProductScreenMedium()
+fun ProductScreenMediumPreview() {
+    RestaurAppTheme {
+        // La vista previa llama a la función con una acción vacía
+        ProductScreenMedium(onNavigateToTechnical = {}, onNavigateToFormative = {})
+    }
 }
