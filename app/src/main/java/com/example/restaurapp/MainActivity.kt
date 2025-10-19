@@ -18,7 +18,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.restaurapp.navigation.Screen
 import com.example.restaurapp.ui.RegisterScreen
-import com.example.restaurapp.ui.screens.homeScreen.HomeScreenBase
 import com.example.restaurapp.ui.screens.loginScreen.LoginScreen
 import com.example.restaurapp.ui.screens.productScreen.ProductScreen
 import com.example.restaurapp.ui.theme.RestaurAppTheme
