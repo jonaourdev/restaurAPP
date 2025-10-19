@@ -1,16 +1,14 @@
-package com.example.restaurapp.ui.screen // ▼▼▼ ERROR CORREGIDO AQUÍ ▼▼▼
+package com.example.restaurapp.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -19,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.example.restaurapp.R
 import com.example.restaurapp.ui.theme.RestaurAppTheme
 
-// Enum para manejar el tipo de contenido seleccionado
+// Enum se queda aquí o en un archivo común
 enum class ContentType {
     Familia,
     ConceptoFormativo,
@@ -29,10 +27,9 @@ enum class ContentType {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddContentScreen(
+    windowSizeClass: WindowWidthSizeClass,
     onNavigateBack: () -> Unit
 ) {
-    var selectedContentType by remember { mutableStateOf(ContentType.ConceptoTecnico) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -51,56 +48,21 @@ fun AddContentScreen(
                         )
                     }
                 },
-                actions = {
-                    // Espaciador para centrar el título correctamente
-                    Spacer(modifier = Modifier.width(48.dp))
-                }
+                actions = { Spacer(modifier = Modifier.width(48.dp)) }
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Para que el formulario sea scrollable
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Selector de tipo de contenido
-            ContentTypeSelector(
-                selectedType = selectedContentType,
-                onTypeSelected = { selectedContentType = it }
-            )
-
-            // El formulario cambia según el tipo de contenido seleccionado
-            when (selectedContentType) {
-                ContentType.Familia -> FamilyForm()
-                ContentType.ConceptoFormativo -> FormativeConceptForm()
-                ContentType.ConceptoTecnico -> TechnicalConceptForm()
-            }
-
-            Spacer(modifier = Modifier.weight(1f)) // Empuja el botón hacia abajo
-
-            // Botón para guardar el contenido
-            Button(
-                onClick = { /* Lógica para guardar se implementará más adelante */ },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Guardar ${
-                        when (selectedContentType) {
-                            ContentType.Familia -> "Familia"
-                            ContentType.ConceptoFormativo -> "Concepto"
-                            ContentType.ConceptoTecnico -> "Concepto"
-                        }
-                    }",
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
+        when (windowSizeClass) {
+            WindowWidthSizeClass.Compact -> AddContentScreenCompact(modifier = Modifier.padding(paddingValues))
+            WindowWidthSizeClass.Medium -> AddContentScreenMedium(modifier = Modifier.padding(paddingValues))
+            WindowWidthSizeClass.Expanded -> AddContentScreenExpanded(modifier = Modifier.padding(paddingValues))
         }
     }
 }
+
+// --- Componentes de Formulario Reutilizables ---
+// Mueve aquí TODOS los composables de los formularios para evitar duplicación de código.
+// (ContentTypeSelector, FamilyForm, FormativeConceptForm, TechnicalConceptForm, ImageUploadButton)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,28 +70,31 @@ fun ContentTypeSelector(
     selectedType: ContentType,
     onTypeSelected: (ContentType) -> Unit
 ) {
-    val options = mapOf(
-        ContentType.Familia to "Familia",
-        ContentType.ConceptoFormativo to "Concepto Formativo",
-        ContentType.ConceptoTecnico to "Concepto Técnico"
-    )
+    val tabOptions = listOf(ContentType.Familia, ContentType.ConceptoFormativo, ContentType.ConceptoTecnico)
+    val selectedTabIndex = tabOptions.indexOf(selectedType)
 
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        options.forEach { (type, label) ->
-            SegmentedButton(
-                selected = selectedType == type,
-                onClick = { onTypeSelected(type) }
-            ) {
-                Text(label)
-            }
+    TabRow(selectedTabIndex = selectedTabIndex) {
+        tabOptions.forEachIndexed { index, type ->
+            Tab(
+                selected = selectedTabIndex == index,
+                onClick = { onTypeSelected(type) },
+                text = {
+                    // El texto que se mostrará en cada pestaña
+                    val label = when (type) {
+                        ContentType.Familia -> "Familia"
+                        ContentType.ConceptoFormativo -> "Concepto Formativo"
+                        ContentType.ConceptoTecnico -> "Concepto Técnico"
+                    }
+                    Text(label)
+                }
+            )
         }
     }
 }
 
-// --- Formularios Dinámicos ---
-
 @Composable
 fun FamilyForm() {
+    // ... (El código de FamilyForm no cambia)
     var familyName by remember { mutableStateOf("") }
     var familyDescription by remember { mutableStateOf("") }
 
@@ -152,6 +117,7 @@ fun FamilyForm() {
 
 @Composable
 fun FormativeConceptForm() {
+    // ... (El código de FormativeConceptForm no cambia)
     var conceptName by remember { mutableStateOf("") }
     var conceptDescription by remember { mutableStateOf("") }
 
@@ -175,11 +141,10 @@ fun FormativeConceptForm() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TechnicalConceptForm() {
+    // ... (El código de TechnicalConceptForm no cambia)
     var conceptName by remember { mutableStateOf("") }
     var conceptDescription by remember { mutableStateOf("") }
-
-    // --- Lógica para el menú desplegable ---
-    val families = listOf("Arco", "Columna") // Datos de ejemplo
+    val families = listOf("Arco", "Columna")
     var expanded by remember { mutableStateOf(false) }
     var selectedFamily by remember { mutableStateOf("") }
 
@@ -190,20 +155,15 @@ fun TechnicalConceptForm() {
             label = { Text("Nombre del Concepto") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        // Menú desplegable para seleccionar la familia
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
         ) {
-            // Este TextField ahora es el "ancla" del menú y muestra la selección
             OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(), // Es importante decirle que es el ancla
+                modifier = Modifier.fillMaxWidth().menuAnchor(),
                 readOnly = true,
                 value = selectedFamily,
-                onValueChange = {}, // No hace nada porque es de solo lectura
+                onValueChange = {},
                 label = { Text("Familia Perteneciente") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             )
@@ -222,7 +182,6 @@ fun TechnicalConceptForm() {
                 }
             }
         }
-
         OutlinedTextField(
             value = conceptDescription,
             onValueChange = { conceptDescription = it },
@@ -235,8 +194,9 @@ fun TechnicalConceptForm() {
 
 @Composable
 fun ImageUploadButton() {
+    // ... (El código de ImageUploadButton no cambia)
     OutlinedButton(
-        onClick = { /* Lógica para cargar imagen se implementará más adelante */ },
+        onClick = { /* Lógica de carga */ },
         modifier = Modifier.fillMaxWidth()
     ) {
         Image(
@@ -249,11 +209,11 @@ fun ImageUploadButton() {
     }
 }
 
-// --- Vista Previa ---
-@Preview(showBackground = true)
+// --- Vistas Previas para AddContentScreen ---
+@Preview(name = "AddContent - Compact", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
-fun AddContentScreenPreview() {
+fun AddContentScreenCompactMainPreview() {
     RestaurAppTheme {
-        AddContentScreen(onNavigateBack = {})
+        AddContentScreen(windowSizeClass = WindowWidthSizeClass.Compact, onNavigateBack = {})
     }
 }
