@@ -22,7 +22,9 @@ fun LoginScreenCompact(
         titleStyle = MaterialTheme.typography.headlineMedium,
         formFieldWithFraction = 0.9f,
         buttonWidthFraction = 0.7f,
-        spaceAfterTitle = 24.dp,
-        spaceAfterFields = 24.dp
+        spaceAfterTitle = 16.dp,
+        spaceAfterFields = 24.dp,
+        spaceAfterImage = 24.dp,
+        imageSize = 0.8f
     )
 }

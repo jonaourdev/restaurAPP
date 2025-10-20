@@ -22,7 +22,9 @@ fun LoginScreenExpanded(
         titleStyle = MaterialTheme.typography.displaySmall,
         formFieldWithFraction = 0.5f,
         buttonWidthFraction = 0.4f,
-        spaceAfterTitle = 48.dp,
-        spaceAfterFields = 32.dp
+        spaceAfterTitle = 36.dp,
+        spaceAfterFields = 32.dp,
+        spaceAfterImage = 16.dp,
+        imageSize = 0.8f
     )
 }

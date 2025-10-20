@@ -22,7 +22,9 @@ fun LoginScreenMedium(
         titleStyle = MaterialTheme.typography.headlineLarge,
         formFieldWithFraction = 0.7f,
         buttonWidthFraction = 0.6f,
-        spaceAfterTitle = 40.dp,
-        spaceAfterFields = 32.dp
+        spaceAfterTitle = 36.dp,
+        spaceAfterFields = 32.dp,
+        spaceAfterImage = 16.dp,
+        imageSize = 0.8f
     )
 }
