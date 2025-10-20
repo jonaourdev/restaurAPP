@@ -52,7 +52,7 @@ fun HomeScreenBase(
             .fillMaxSize()
             .padding(mainPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp) // Usamos Arrangement para un espaciado consistente
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
             value = "",
@@ -73,27 +73,24 @@ fun HomeScreenBase(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 2. CONECTA LOS EVENTOS A LAS TARJETAS EXISTENTES
-            // IMPORTANTE: Esto asume que tu Composable ConceptCard tiene un parámetro onClick
             ConceptCard(
                 text = "CONCEPTOS FORMATIVOS",
                 iconRes = R.drawable.laurel,
                 color = DuocYellow,
-                onClick = onNavigateToListConcept, // Notifica el evento de clic
+                onClick = onNavigateToListConcept,
                 modifier = Modifier.weight(1f)
             )
             ConceptCard(
                 text = "CONCEPTOS TÉCNICOS",
                 iconRes = R.drawable.capitel,
                 color = DuocBlue,
-                onClick = onNavigateToListConcept, // Notifica el evento de clic
+                onClick = onNavigateToListConcept,
                 modifier = Modifier.weight(1f)
             )
         }
 
-        // 3. AÑADE LA NUEVA TARJETA PARA "AÑADIR CONTENIDO"
         Card(
-            onClick = onNavigateToAddContent, // Notifica el nuevo evento de clic
+            onClick = onNavigateToAddContent,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp),

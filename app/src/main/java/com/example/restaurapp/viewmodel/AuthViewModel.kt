@@ -106,7 +106,6 @@ class AuthViewModel(
 
     // --- INICIO DE LA LÓGICA DE ACTUALIZACIÓN DE PERFIL ---
 
-    // Funciones 'onChange' para los campos de edición
     fun onEditNombreChange(v: String) = _uiState.update { it.copy(editNombreCompleto = v, error = null) }
     fun onEditCorreoChange(v: String) = _uiState.update { it.copy(editCorreo = v, error = null) }
 
@@ -139,22 +138,19 @@ class AuthViewModel(
         _uiState.update { it.copy(isLoading = true, error = null, updateSuccess = false) }
 
         try {
-            // Crea una copia actualizada de la entidad del usuario con los nuevos datos
             val updatedUser = currentUser.copy(
                 nombreCompleto = state.editNombreCompleto,
                 correo = state.editCorreo
             )
 
-            // Llama al UserRepository para realizar la actualización en la base de datos
             userRepo.updateUser(updatedUser)
 
-            delay(2000) // Delay para feedback visual
+            delay(2000)
 
-            // Actualiza el estado de la UI con el nuevo usuario y marca el éxito
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    currentUser = updatedUser, // Clave: actualiza el usuario en toda la app
+                    currentUser = updatedUser,
                     updateSuccess = true
                 )
             }
@@ -163,24 +159,17 @@ class AuthViewModel(
         }
     }
 
-    /**
-     * Resetea el estado de 'updateSuccess' a false.
-     * Útil para llamarlo después de mostrar un Snackbar o navegar fuera de la pantalla.
-     */
+
     fun resetUpdateStatus() {
         _uiState.update { it.copy(updateSuccess = false, error = null) }
     }
 
-    // --- FIN DE LA LÓGICA DE ACTUALIZACIÓN ---
 
 
-    // --- FUNCIÓN DE LOGOUT ---
     fun logout() {
-        // Al cerrar sesión, reseteamos el estado a sus valores por defecto
         _uiState.value = AuthUiState()
     }
 
-    // --- FUNCIÓN PARA LIMPIAR FORMULARIOS ---
     fun limpiarFormularioRegistro() {
         _uiState.update {
             it.copy(

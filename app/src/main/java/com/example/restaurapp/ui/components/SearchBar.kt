@@ -27,7 +27,6 @@ fun SearchBar(
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Buscar") },
         shape = CircleShape,
         singleLine = true,
-        // Colores personalizados para que se vea limpio y moderno
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),

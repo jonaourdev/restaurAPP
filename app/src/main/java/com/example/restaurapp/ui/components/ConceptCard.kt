@@ -32,7 +32,7 @@ fun ConceptCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.height(180.dp), // Altura fija para consistencia
+        modifier = modifier.height(180.dp),
         colors = CardDefaults.cardColors(containerColor = color)
     ) {
         Column(
@@ -49,7 +49,7 @@ fun ConceptCard(
             Spacer(modifier = Modifier.height(16.dp))
             Icon(
                 painter = painterResource(id = iconRes),
-                contentDescription = null, // Es decorativo
+                contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier.size(40.dp)
             )

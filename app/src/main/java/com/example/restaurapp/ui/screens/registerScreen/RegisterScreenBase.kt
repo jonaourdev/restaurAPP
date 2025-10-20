@@ -145,9 +145,9 @@ fun RegisterScreenBase(
 
                 Spacer(Modifier.height(spaceAfterFields))
 
-                // Botón “Registrarte”
+                // Botón Registrarte
                 Button(
-                    onClick = onRegisterClick, // Llama a la función de registro
+                    onClick = onRegisterClick,
                     modifier = Modifier
                         .fillMaxWidth(buttonWidthFraction)
                         .height(50.dp),
@@ -156,7 +156,7 @@ fun RegisterScreenBase(
                     Text("Registrarte")
                 }
                 Spacer(modifier = Modifier.height(6.dp))
-                // Botón “Cancelar”
+                // Botón Cancelar
                 TextButton(onClick = onGoLogin, enabled = !isLoading) {
                     Text(
                         "¿Ya tienes cuenta? Inicia sesión aquí",
@@ -180,7 +180,7 @@ fun RegisterScreenBase(
                     CircularProgressIndicator(color = Color.White)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Creando cuenta...", // El mensaje se muestra durante la carga
+                        text = "Creando cuenta...",
                         color = Color.White,
                         fontSize = 18.sp
                     )

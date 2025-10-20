@@ -24,12 +24,9 @@ class AuthViewModelFactory(
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        // Comprueba si la clase que se pide crear es nuestro AuthViewModel
         if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
-            // 3. SI LO ES, CREA LA INSTANCIA PASÁNDOLE AMBOS REPOSITORIOS.
             return AuthViewModel(authRepository, userRepository) as T
         }
-        // Si se pide crear otro tipo de ViewModel que esta factory no conoce, lanza un error.
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }

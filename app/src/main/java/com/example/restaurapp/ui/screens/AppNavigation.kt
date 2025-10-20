@@ -97,7 +97,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 onGuestAccess = {
                     scope.launch {
                         isGuestLoading = true
-                        delay(2000) // Reducido para mejor UX
+                        delay(2000)
                         isGuestLoading = false
                         navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
@@ -160,17 +160,14 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
 
 
         composable(Screen.AddConcept.route) {
-            // 1. Obtén el contexto
             val context = LocalContext.current
 
-            // 2. Crea el ViewModel usando su Factory
             val conceptViewModel: ConceptViewModel = viewModel(
                 factory = ConceptViewModelFactory(
                     repository = ConceptRepository(AppDatabase.get(context).conceptDao())
                 )
             )
 
-            // 3. Pasa el ViewModel y la acción de navegar hacia atrás
             AddConceptScreen(
                 vm = conceptViewModel,
                 onNavigateBack = { navController.popBackStack() }
@@ -178,7 +175,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         }
 
         composable(Screen.ListConcept.route) {
-            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
+            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory)
 
             ListConceptScreen(
                 vm = conceptViewModel,
