@@ -8,9 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.restaurapp.ui.screens.bottomNavBarScreen.BottomNavBarScreen
-import com.example.restaurapp.ui.screens.homeScreen.HomeScreenCompact
-import com.example.restaurapp.ui.screens.homeScreen.HomeScreenExpanded
-import com.example.restaurapp.ui.screens.homeScreen.HomeScreenMedium
+// Se asume que estos componentes ya existen en tu proyecto
+// import com.example.restaurapp.ui.screens.profileScreen.ProfileScreenCompact
+// import com.example.restaurapp.ui.screens.profileScreen.ProfileScreenMedium
+// import com.example.restaurapp.ui.screens.profileScreen.ProfileScreenExpanded
 import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -19,11 +20,12 @@ fun ProfileScreen(
     windowSizeClass: WindowSizeClass,
     vm: AuthViewModel,
     onLogoutClick: () -> Unit,
+    onGoToEdit: () -> Unit, // 1. AÑADIR EL PARÁMETRO PARA NAVEGAR
     navController: NavController
-){
+) {
     val currentRoute = navController.currentDestination?.route
 
-    Scaffold (
+    Scaffold(
         bottomBar = {
             BottomNavBarScreen(navController = navController, currentRoute = currentRoute)
         }
@@ -33,6 +35,7 @@ fun ProfileScreen(
                 ProfileScreenCompact(
                     modifier = Modifier.padding(innerPadding),
                     vm = vm,
+                    onGoToEdit = onGoToEdit,
                     onLogoutClick = onLogoutClick
                 )
             }
@@ -40,6 +43,7 @@ fun ProfileScreen(
                 ProfileScreenMedium(
                     modifier = Modifier.padding(innerPadding),
                     vm = vm,
+                    onGoToEdit = onGoToEdit,
                     onLogoutClick = onLogoutClick
                 )
             }
@@ -47,6 +51,7 @@ fun ProfileScreen(
                 ProfileScreenExpanded(
                     modifier = Modifier.padding(innerPadding),
                     vm = vm,
+                    onGoToEdit = onGoToEdit,
                     onLogoutClick = onLogoutClick
                 )
             }

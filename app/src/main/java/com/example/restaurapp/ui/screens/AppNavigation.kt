@@ -21,12 +21,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.restaurapp.model.local.user.AppDatabase
 import com.example.restaurapp.model.repository.AuthRepository
+import com.example.restaurapp.model.repository.UserRepository
 import com.example.restaurapp.navigation.Screen
 import com.example.restaurapp.ui.RegisterScreen
 import com.example.restaurapp.ui.screens.homeScreen.HomeScreen
 import com.example.restaurapp.ui.screens.loginScreen.LoginScreen
 import com.example.restaurapp.ui.screens.profileScreen.ProfileScreen
-import com.example.restaurapp.ui.screens.profileScreen.ProfileScreenBase
 import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.AuthViewModelFactory
 import kotlinx.coroutines.delay
@@ -53,11 +53,15 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
 @Composable
 fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClass) {
     // --- 1. CREACIÓN ÚNICA Y CENTRALIZADA DEL VIEWMODEL ---
-    // Se crea una sola vez y se comparte entre todas las pantallas de autenticación.
     val context = LocalContext.current
     val db = AppDatabase.get(context)
+
+    // Se instancian ambos repositorios
     val authRepository = AuthRepository(db.userDao())
-    val factory = AuthViewModelFactory(authRepository)
+    val userRepository = UserRepository(db.userDao())
+
+    // Se pasan ambos repositorios al Factory para crear el ViewModel
+    val factory = AuthViewModelFactory(authRepository, userRepository)
     val authVm: AuthViewModel = viewModel(factory = factory)
 
     // Recolectamos el estado una sola vez aquí para controlar la navegación principal.
@@ -132,11 +136,15 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
 
         // --- Profile Screen ---
         composable(route = Screen.Profile.route) {
-            // Pasamos el mismo ViewModel para acceder a `currentUser` y `logout()`
+            // --- CORRECCIÓN ---
+            // Se añaden los parámetros 'windowSizeClass' y 'navController' que faltaban.
             ProfileScreen(
-                navController = navController,
                 windowSizeClass = windowSizeClass,
+                navController = navController,
                 vm = authVm,
+                onGoToEdit = {
+                    navController.navigate(Screen.EditProfile.route)
+                },
                 onLogoutClick = {
                     // Navegamos al login y limpiamos todo el historial de navegación.
                     navController.navigate(Screen.Login.route) {
@@ -148,5 +156,16 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 }
             )
         }
+
+        // --- Edit Profile Screen ---
+//        composable(route = Screen.EditProfile.route) {
+//            EditProfileScreen(
+//                vm = authVm,
+//                onProfileUpdate = {
+//                    // Vuelve a la pantalla de perfil anterior
+//                    navController.popBackStack()
+//                }
+//            )
+//        }
     }
 }

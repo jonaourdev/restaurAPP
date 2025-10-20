@@ -12,10 +12,13 @@ import com.example.restaurapp.viewmodel.AuthViewModel
 fun ProfileScreenExpanded(
     vm: AuthViewModel,
     onLogoutClick: () -> Unit,
+    onGoToEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ProfileScreenBase(
+        modifier = modifier,
         vm = vm,
+        onGoToEdit = onGoToEdit,
         onLogoutClick = onLogoutClick,
         horizontalPadding = 128.dp,
         spaceBeforeAvatar = 64.dp,

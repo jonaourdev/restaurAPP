@@ -5,7 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.restaurapp.ui.screens.homeScreen.HomeScreenBase
+// Se corrige la importación, ya que este Composable usa ProfileScreenBase
+import com.example.restaurapp.ui.screens.profileScreen.ProfileScreenBase
 import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -13,10 +14,13 @@ import com.example.restaurapp.viewmodel.AuthViewModel
 fun ProfileScreenCompact(
     vm: AuthViewModel,
     onLogoutClick: () -> Unit,
+    onGoToEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ProfileScreenBase(
+        modifier = modifier,
         vm = vm,
+        onGoToEdit = onGoToEdit,
         onLogoutClick = onLogoutClick,
         horizontalPadding = 16.dp,
         spaceBeforeAvatar = 32.dp,

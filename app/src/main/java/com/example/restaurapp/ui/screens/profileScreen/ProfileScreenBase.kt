@@ -27,9 +27,9 @@ import com.example.restaurapp.viewmodel.AuthViewModel
 
 @Composable
 fun ProfileScreenBase(
-    // 2. CAMBIAR EL TIPO DE VIEWMODEL EN LOS PARÁMETROS
     modifier: Modifier = Modifier,
     vm: AuthViewModel,
+    onGoToEdit: () -> Unit,
     onLogoutClick: () -> Unit,
     horizontalPadding: Dp,
     spaceBeforeAvatar: Dp,
@@ -39,7 +39,6 @@ fun ProfileScreenBase(
     spaceAfterAvatar: Dp,
     cardAndButtonWidthFraction: Float
 ) {
-    // 3. OBSERVAR EL ESTADO DEL VIEWMODEL UNIFICADO
     val uiState by vm.uiState.collectAsState()
     val currentUser = uiState.currentUser
 
@@ -47,7 +46,7 @@ fun ProfileScreenBase(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(horizontalPadding),
+            .padding(horizontal = horizontalPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(spaceBeforeAvatar))
@@ -68,9 +67,7 @@ fun ProfileScreenBase(
                 contentScale = ContentScale.Crop
             )
 
-            // 4. MOSTRAR DATOS REALES DEL USUARIO LOGEADO
             Text(
-                // Usamos el operador elvis (?:) para mostrar un valor por defecto si el usuario es nulo
                 text = currentUser?.nombreCompleto ?: "Usuario Invitado",
                 style = nameTextStyle,
                 fontWeight = FontWeight.Bold
@@ -92,7 +89,7 @@ fun ProfileScreenBase(
             // Opción 1: Editar Perfil
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { /* TODO: Navegar a pantalla de edición */ },
+                onClick = onGoToEdit,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Row(
@@ -158,9 +155,9 @@ fun ProfileScreenBase(
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f)) // Empuja el botón de cerrar sesión hacia abajo
+        Spacer(modifier = Modifier.weight(1f))
 
-        // --- BOTÓN CERRAR SESIÓN (Lógica ya es compatible) ---
+        // --- BOTÓN CERRAR SESIÓN ---
         Button(
             onClick = {
                 vm.logout()
