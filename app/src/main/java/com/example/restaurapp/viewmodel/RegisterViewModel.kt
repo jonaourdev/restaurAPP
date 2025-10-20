@@ -38,43 +38,49 @@ class RegisterViewModel(private val repo: AuthRepository) : ViewModel() {
     // Registrar usuario con validaciones
     fun registrar() = viewModelScope.launch {
         val f = _form.value
+        // Limpiamos el error previo al iniciar una nueva validación
+        _form.update { it.copy(error = null) }
 
-        _form.update { it.copy(isLoading = true, error = null) }
-        delay(3000)
-
-        // --- Validaciones de UI  ---
+        // --- 1. PRIMERO, LAS VALIDACIONES ---
         if (f.nombreCompleto.isBlank() || f.correo.isBlank() || f.contrasenna.isBlank()) {
             _form.update { it.copy(error = "Completa todos los campos.") }
-            return@launch
+            return@launch // Se detiene aquí, isLoading nunca fue true
         }
 
         val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
         if (!emailRegex.matches(f.correo.trim())) {
             _form.update { it.copy(error = "Ingresa un correo válido.") }
-            return@launch
+            return@launch // Se detiene aquí, isLoading nunca fue true
         }
 
         if (f.contrasenna.length < 8) {
             _form.update { it.copy(error = "La contraseña debe tener al menos 8 caracteres.") }
-            return@launch
+            return@launch // Se detiene aquí, isLoading nunca fue true
         }
 
         if (f.contrasenna != f.confirmarContrasenna) {
             _form.update { it.copy(error = "Las contraseñas no coinciden.") }
-            return@launch
+            return@launch // Se detiene aquí, isLoading nunca fue true
         }
 
-        // --- Lógica de negocio delegada al repositorio ---
+        // --- 2. SI TODO ES VÁLIDO, SE INICIA LA CARGA ---
+        _form.update { it.copy(isLoading = true) }
+
+        // --- 3. LÓGICA DE NEGOCIO Y DELAY ---
         try {
+            // Se realiza la llamada al repositorio
             repo.register(
                 nombreCompleto = f.nombreCompleto,
                 correo = f.correo,
                 contrasenna = f.contrasenna
             )
-            _form.update { it.copy(success = true) }
+            // Si el registro fue exitoso en el repo, esperamos para el feedback visual
+            delay(3000)
+            // Finalmente, marcamos el éxito para navegar y detenemos la carga
+            _form.update { it.copy(success = true, isLoading = false) }
         } catch (e: Exception) {
-            // Captura la excepción del repositorio
-            _form.update { it.copy(error = e.message) }
+            // Si el repo lanza un error (ej: correo ya existe), lo mostramos y detenemos la carga
+            _form.update { it.copy(error = e.message, isLoading = false) }
         }
     }
 }

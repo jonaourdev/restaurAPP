@@ -96,7 +96,7 @@ fun RegisterScreen(
                     value = formState.contrasenna,
                     onValueChange = vm::onChangeContrasenna,
                     label = { Text("Contraseña") },
-                    // ... resto de propiedades ...
+                    modifier = Modifier.fillMaxWidth(0.9f),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         val icon = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
@@ -112,7 +112,7 @@ fun RegisterScreen(
                     value = formState.confirmarContrasenna,
                     onValueChange = vm::onChangeConfirmarContrasenna,
                     label = { Text("Confirmar contraseña") },
-                    // ... resto de propiedades ...
+                    modifier = Modifier.fillMaxWidth(0.9f),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     enabled = !isLoading // Deshabilitado mientras carga
                 )
@@ -129,7 +129,7 @@ fun RegisterScreen(
                 ) {
                     Text("Registrarte")
                 }
-
+                Spacer(modifier = Modifier.height(6.dp))
                 // Botón “Cancelar”
                 OutlinedButton(
                     onClick = onGoLogin,

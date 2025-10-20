@@ -20,19 +20,11 @@ import com.example.restaurapp.viewmodel.LoginViewModel
 fun LoginScreen(
     vm: LoginViewModel,
     isGuestLoading: Boolean,
-    // onLoginSuccess: () -> Unit, // <--- 1. ELIMINA ESTE PARÁMETRO
     onGoRegister: () -> Unit,
     onGuestAccess: () -> Unit
 ) {
     val formState by vm.form.collectAsState()
     val isLoading = formState.isLoading || isGuestLoading
-
-    // 2. ELIMINA ESTE BLOQUE DE CÓDIGO POR COMPLETO
-    // if (formState.success) {
-    //     LaunchedEffect(Unit) {
-    //         onLoginSuccess()
-    //     }
-    // }
 
     Box(
         modifier = Modifier.fillMaxSize()
