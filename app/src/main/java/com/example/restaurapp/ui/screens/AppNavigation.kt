@@ -126,6 +126,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             }
 
             RegisterScreen(
+                windowSizeClass = windowSizeClass,
                 vm = registerVm,
                 onRegisterClick = {
                     registerVm.registrar()
