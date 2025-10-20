@@ -6,20 +6,27 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.restaurapp.ui.screen.productScreen.ProductScreen
+import com.example.restaurapp.model.local.concept.AppDataBase
 import com.example.restaurapp.ui.screen.addConceptScreen.AddContentScreen
-import com.example.restaurapp.ui.screen.productScreen.TechnicalConceptsScreen
-import com.example.restaurapp.ui.screen.productScreen.FormativeConceptsScreen
 import com.example.restaurapp.ui.screen.productScreen.FormativeConceptDetailScreen
+import com.example.restaurapp.ui.screen.productScreen.FormativeConceptsScreen
+import com.example.restaurapp.ui.screen.productScreen.ProductScreen
+import com.example.restaurapp.ui.screen.productScreen.TechnicalConceptsScreen
 import com.example.restaurapp.ui.theme.RestaurAppTheme
+import com.example.restaurapp.viewmodel.AddContentViewModel
+import com.example.restaurapp.viewmodel.AddContentViewModelFactory
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -41,7 +48,7 @@ class MainActivity : ComponentActivity() {
 
 // Composable de navegación
 @Composable
-fun RestaurApp(widthSizeClass: androidx.compose.material3.windowsizeclass.WindowWidthSizeClass) {
+fun RestaurApp(widthSizeClass: WindowWidthSizeClass) {
     val navController = rememberNavController()
 
     NavHost(
@@ -89,12 +96,47 @@ fun RestaurApp(widthSizeClass: androidx.compose.material3.windowsizeclass.Window
                 onNavigateBack = { navController.navigateUp() }
             )
         }
+
+        // --- RUTA MODIFICADA ---
         composable("add_content") {
+            // 1. Obtener una instancia de la base de datos y los DAOs
+            val context = LocalContext.current
+            val db = AppDatabase.getDatabase(context)
+            val familyDao = db.familyDao()
+            val conceptDao = db.conceptDao()
+
+            // 2. Crear la Factory y luego el ViewModel
+            val factory = AddContentViewModelFactory(familyDao, conceptDao)
+            val viewModel: AddContentViewModel = viewModel(factory = factory)
+
+            // 3. Recolectar la lista de familias del ViewModel para el desplegable
+            val families by viewModel.families.collectAsState()
+
+            // 4. Llamar a la UI pasándole el estado y los eventos desde el ViewModel
             AddContentScreen(
                 windowSizeClass = widthSizeClass,
-                onNavigateBack = { navController.navigateUp() }
+                // Pasamos los estados del formulario
+                newFamilyName = viewModel.newFamilyName,
+                onFamilyNameChange = viewModel::onFamilyNameChange,
+                newFamilyDescription = viewModel.newFamilyDescription,
+                onFamilyDescriptionChange = viewModel::onFamilyDescriptionChange,
+                onSaveFamily = viewModel::saveNewFamily,
+
+                newConceptName = viewModel.newConceptName,
+                onConceptNameChange = viewModel::onConceptNameChange,
+                newConceptDescription = viewModel.newConceptDescription,
+                onConceptDescriptionChange = viewModel::onConceptDescriptionChange,
+
+                // Pasamos la lista de familias y las funciones para guardar conceptos
+                families = families,
+                onSaveFormativeConcept = viewModel::saveNewFormativeConcept,
+                onSaveTechnicalConcept = { familyId ->
+                    viewModel.saveNewTechnicalConcept(familyId)
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
     }
 }
-
