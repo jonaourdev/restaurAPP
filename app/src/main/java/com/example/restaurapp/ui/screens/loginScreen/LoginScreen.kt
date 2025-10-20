@@ -1,22 +1,21 @@
 package com.example.restaurapp.ui.screens.loginScreen
 
-import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
-import com.example.restaurapp.viewmodel.LoginViewModel
+import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    vm: LoginViewModel,
+    vm: AuthViewModel,
     isGuestLoading: Boolean,
     onGoRegister: () -> Unit,
     onGuestAccess: () -> Unit,
     windowSizeClass: WindowSizeClass
 ) {
-    when (windowSizeClass.widthSizeClass){
+    when (windowSizeClass.widthSizeClass) {
         WindowWidthSizeClass.Compact -> {
             LoginScreenCompact(
                 vm = vm,

@@ -8,12 +8,12 @@ import androidx.compose.runtime.*
 import com.example.restaurapp.ui.screens.registerScreen.RegisterScreenCompact
 import com.example.restaurapp.ui.screens.registerScreen.RegisterScreenExpanded
 import com.example.restaurapp.ui.screens.registerScreen.RegisterScreenMedium
-import com.example.restaurapp.viewmodel.RegisterViewModel
+import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    vm: RegisterViewModel,
+    vm: AuthViewModel,
     onGoLogin: () -> Unit,
     onRegisterClick: () -> Unit,
     windowSizeClass: WindowSizeClass

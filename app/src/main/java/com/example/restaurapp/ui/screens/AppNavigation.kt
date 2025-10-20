@@ -73,11 +73,9 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
     ) {
         // --- Login Screen ---
         composable(route = Screen.Login.route) {
-            // Estado para el acceso como invitado (específico de esta pantalla)
             var isGuestLoading by remember { mutableStateOf(false) }
             val scope = rememberCoroutineScope()
 
-            // Navega a Home si el login o registro fue exitoso.
             if (authState.success) {
                 LaunchedEffect(authState.success) {
                     navController.navigate(Screen.Home.route) {
@@ -86,6 +84,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 }
             }
 
+            // Se pasa el windowSizeClass a LoginScreen
             LoginScreen(
                 vm = authVm,
                 isGuestLoading = isGuestLoading,
@@ -95,20 +94,19 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 onGuestAccess = {
                     scope.launch {
                         isGuestLoading = true
-                        delay(3000)
+                        delay(2000) // Reducido para mejor UX
                         isGuestLoading = false
                         navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     }
-                }
+                },
+                windowSizeClass = windowSizeClass
             )
         }
 
         // --- Register Screen ---
         composable(route = Screen.Register.route) {
-            // Si el registro es exitoso, navegamos de vuelta a la pantalla de Login.
-            // El LaunchedEffect en la pantalla de Login se encargará de redirigir a Home.
             if (authState.success) {
                 LaunchedEffect(authState.success) {
                     navController.navigate(Screen.Login.route) {
@@ -116,13 +114,15 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                     }
                 }
             }
-
             RegisterScreen(
-                vm = authVm, // Usamos la misma instancia del ViewModel
+                vm = authVm,
                 onGoLogin = {
-                    authVm.limpiarFormularioRegistro() // Limpia los campos del formulario
                     navController.popBackStack()
-                }
+                },
+                onRegisterClick = {
+                    authVm.registrar()
+                },
+                windowSizeClass = windowSizeClass
             )
         }
 
@@ -130,14 +130,12 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         composable(route = Screen.Home.route) {
             HomeScreen(
                 windowSizeClass = windowSizeClass,
-                navController = navController // Pasamos el NavController para la navegación interna
+                navController = navController
             )
         }
 
         // --- Profile Screen ---
         composable(route = Screen.Profile.route) {
-            // --- CORRECCIÓN ---
-            // Se añaden los parámetros 'windowSizeClass' y 'navController' que faltaban.
             ProfileScreen(
                 windowSizeClass = windowSizeClass,
                 navController = navController,
@@ -146,7 +144,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                     navController.navigate(Screen.EditProfile.route)
                 },
                 onLogoutClick = {
-                    // Navegamos al login y limpiamos todo el historial de navegación.
+                    authVm.logout() // Llamar a logout en el vm
                     navController.navigate(Screen.Login.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             inclusive = true
@@ -162,7 +160,6 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
 //            EditProfileScreen(
 //                vm = authVm,
 //                onProfileUpdate = {
-//                    // Vuelve a la pantalla de perfil anterior
 //                    navController.popBackStack()
 //                }
 //            )

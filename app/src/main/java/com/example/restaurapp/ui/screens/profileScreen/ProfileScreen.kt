@@ -8,10 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.restaurapp.ui.screens.bottomNavBarScreen.BottomNavBarScreen
-// Se asume que estos componentes ya existen en tu proyecto
-// import com.example.restaurapp.ui.screens.profileScreen.ProfileScreenCompact
-// import com.example.restaurapp.ui.screens.profileScreen.ProfileScreenMedium
-// import com.example.restaurapp.ui.screens.profileScreen.ProfileScreenExpanded
 import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,7 +16,7 @@ fun ProfileScreen(
     windowSizeClass: WindowSizeClass,
     vm: AuthViewModel,
     onLogoutClick: () -> Unit,
-    onGoToEdit: () -> Unit, // 1. AÑADIR EL PARÁMETRO PARA NAVEGAR
+    onGoToEdit: () -> Unit,
     navController: NavController
 ) {
     val currentRoute = navController.currentDestination?.route

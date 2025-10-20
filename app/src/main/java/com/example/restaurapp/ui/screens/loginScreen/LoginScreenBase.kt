@@ -1,6 +1,5 @@
 package com.example.restaurapp.ui.screens.loginScreen
 
-import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,10 +10,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -24,29 +27,32 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.restaurapp.ui.theme.DuocBlue
-import com.example.restaurapp.viewmodel.LoginViewModel
-import androidx.compose.ui.text.TextStyle
 import com.example.restaurapp.R
+import com.example.restaurapp.ui.theme.DuocBlue
+import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreenBase(
-    vm: LoginViewModel,
+    vm: AuthViewModel,
     isGuestLoading: Boolean,
     onGoRegister: () -> Unit,
     onGuestAccess: () -> Unit,
-    //Parámetros responsive
     horizontalPadding: Dp,
     titleStyle: TextStyle,
     formFieldWithFraction: Float,
@@ -56,8 +62,9 @@ fun LoginScreenBase(
     imageSize: Float,
     spaceAfterImage: Dp
 ){
-    val formState by vm.form.collectAsState()
-    val isLoading = formState.isLoading || isGuestLoading
+    val uiState by vm.uiState.collectAsState()
+    val isLoading = uiState.isLoading || isGuestLoading
+    var passwordVisible by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -85,7 +92,9 @@ fun LoginScreenBase(
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(spaceAfterTitle))
-                formState.error?.let {
+
+                // Error desde el estado unificado
+                uiState.error?.let {
                     Text(
                         text = it,
                         color = MaterialTheme.colorScheme.error,
@@ -94,25 +103,38 @@ fun LoginScreenBase(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
+
+                // Correo
                 OutlinedTextField(
-                    value = formState.correo,
-                    onValueChange = vm::onChangeCorreo,
+                    value = uiState.loginCorreo,
+                    onValueChange = vm::onLoginCorreoChange,
                     label = { Text("Correo electrónico") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(formFieldWithFraction),
                     enabled = !isLoading
                 )
                 Spacer(Modifier.height(8.dp))
+
+                // Contraseña
                 OutlinedTextField(
-                    value = formState.contrasenna,
-                    onValueChange = vm::onChangeContrasenna,
+                    value = uiState.loginContrasenna,
+                    onValueChange = vm::onLoginContrasennaChange,
                     label = { Text("Contraseña") },
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val icon = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = icon, contentDescription = "Toggle password visibility")
+                        }
+                    },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(formFieldWithFraction),
                     enabled = !isLoading
                 )
+
                 Spacer(Modifier.height(spaceAfterFields))
+
+                // Botón para llamar a la función de login del ViewModel
                 Button(
                     onClick = { vm.login() },
                     modifier = Modifier
@@ -147,7 +169,7 @@ fun LoginScreenBase(
 
         if (isLoading) {
             val message = when {
-                formState.isLoading -> "¡Login exitoso!"
+                uiState.isLoading -> "¡Login exitoso!"
                 isGuestLoading -> "Ingresando como invitado..."
                 else -> ""
             }

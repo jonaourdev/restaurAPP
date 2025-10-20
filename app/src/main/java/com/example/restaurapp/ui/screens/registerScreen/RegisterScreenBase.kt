@@ -38,20 +38,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.restaurapp.ui.theme.DuocBlue
-import com.example.restaurapp.viewmodel.RegisterViewModel
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
+import com.example.restaurapp.viewmodel.AuthViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreenBase(
-    vm: RegisterViewModel,
+    vm: AuthViewModel,
     onGoLogin: () -> Unit,
     onRegisterClick: () -> Unit,
-    //Parámetros responsive
     horizontalPadding: Dp,
     titleStyle: TextStyle,
     formFieldWidthFraction: Float,
@@ -59,9 +59,9 @@ fun RegisterScreenBase(
     spaceAfterTitle: Dp,
     spaceAfterFields: Dp
 ){
-    val formState by vm.form.collectAsState()
+    val uiState by vm.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
-    val isLoading = formState.isLoading // Usamos el estado del ViewModel
+    val isLoading = uiState.isLoading
 
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -85,48 +85,49 @@ fun RegisterScreenBase(
 
                 Spacer(Modifier.height(spaceAfterTitle))
 
-                // Error
-                formState.error?.let {
+                // Error desde el estado unificado
+                uiState.error?.let {
                     Text(
                         text = it,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 14.sp,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
 
                 // Nombre
                 OutlinedTextField(
-                    value = formState.nombreCompleto,
-                    onValueChange = vm::onChangeNombreCompleto,
+                    value = uiState.registerNombreCompleto,
+                    onValueChange = vm::onRegisterNombreChange,
                     label = { Text("Nombre completo") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(formFieldWidthFraction),
-                    enabled = !isLoading // Deshabilitado mientras carga
+                    enabled = !isLoading
                 )
 
                 // Correo
                 OutlinedTextField(
-                    value = formState.correo,
-                    onValueChange = vm::onChangeCorreo,
+                    value = uiState.registerCorreo,
+                    onValueChange = vm::onRegisterCorreoChange,
                     label = { Text("Correo electrónico") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(formFieldWidthFraction),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    enabled = !isLoading // Deshabilitado mientras carga
+                    enabled = !isLoading
                 )
 
                 // Contraseña
                 OutlinedTextField(
-                    value = formState.contrasenna,
-                    onValueChange = vm::onChangeContrasenna,
+                    value = uiState.registerContrasenna,
+                    onValueChange = vm::onRegisterContrasennaChange,
                     label = { Text("Contraseña") },
                     modifier = Modifier.fillMaxWidth(formFieldWidthFraction),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         val icon = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(imageVector = icon, contentDescription = null)
+                            Icon(imageVector = icon, contentDescription = "Toggle password visibility")
                         }
                     },
                     enabled = !isLoading
@@ -134,8 +135,8 @@ fun RegisterScreenBase(
 
                 // Confirmar contraseña
                 OutlinedTextField(
-                    value = formState.confirmarContrasenna,
-                    onValueChange = vm::onChangeConfirmarContrasenna,
+                    value = uiState.registerConfirmarContrasenna,
+                    onValueChange = vm::onRegisterConfirmarContrasennaChange,
                     label = { Text("Confirmar contraseña") },
                     modifier = Modifier.fillMaxWidth(formFieldWidthFraction),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -146,7 +147,7 @@ fun RegisterScreenBase(
 
                 // Botón “Registrarte”
                 Button(
-                    onClick = onRegisterClick,
+                    onClick = onRegisterClick, // Llama a la función de registro
                     modifier = Modifier
                         .fillMaxWidth(buttonWidthFraction)
                         .height(50.dp),
@@ -156,12 +157,11 @@ fun RegisterScreenBase(
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 // Botón “Cancelar”
-                OutlinedButton(
-                    onClick = onGoLogin,
-                    modifier = Modifier.fillMaxWidth(buttonWidthFraction),
-                    enabled = !isLoading
-                ) {
-                    Text("Cancelar")
+                TextButton(onClick = onGoLogin, enabled = !isLoading) {
+                    Text(
+                        "¿Ya tienes cuenta? Inicia sesión aquí",
+                        color = DuocBlue
+                    )
                 }
             }
         }
@@ -180,7 +180,7 @@ fun RegisterScreenBase(
                     CircularProgressIndicator(color = Color.White)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "¡Registro exitoso!", // El mensaje se muestra durante la carga
+                        text = "Creando cuenta...", // El mensaje se muestra durante la carga
                         color = Color.White,
                         fontSize = 18.sp
                     )
@@ -189,4 +189,3 @@ fun RegisterScreenBase(
         }
     }
 }
-

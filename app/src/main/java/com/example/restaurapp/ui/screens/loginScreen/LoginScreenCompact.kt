@@ -4,12 +4,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import com.example.restaurapp.viewmodel.LoginViewModel
+import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreenCompact(
-    vm: LoginViewModel,
+    vm: AuthViewModel,
     isGuestLoading: Boolean,
     onGoRegister: () -> Unit,
     onGuestAccess: () -> Unit){
