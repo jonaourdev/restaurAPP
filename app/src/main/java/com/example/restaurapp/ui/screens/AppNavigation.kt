@@ -19,7 +19,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.restaurapp.model.local.user.AppDatabase
+import com.example.restaurapp.model.local.AppDatabase
 import com.example.restaurapp.model.repository.AuthRepository
 import com.example.restaurapp.model.repository.UserRepository
 import com.example.restaurapp.navigation.Screen
@@ -52,19 +52,16 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
 
 @Composable
 fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClass) {
-    // --- 1. CREACIÓN ÚNICA Y CENTRALIZADA DEL VIEWMODEL ---
+
     val context = LocalContext.current
     val db = AppDatabase.get(context)
 
-    // Se instancian ambos repositorios
     val authRepository = AuthRepository(db.userDao())
     val userRepository = UserRepository(db.userDao())
 
-    // Se pasan ambos repositorios al Factory para crear el ViewModel
     val factory = AuthViewModelFactory(authRepository, userRepository)
     val authVm: AuthViewModel = viewModel(factory = factory)
 
-    // Recolectamos el estado una sola vez aquí para controlar la navegación principal.
     val authState by authVm.uiState.collectAsState()
 
     NavHost(
@@ -84,7 +81,6 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 }
             }
 
-            // Se pasa el windowSizeClass a LoginScreen
             LoginScreen(
                 vm = authVm,
                 isGuestLoading = isGuestLoading,
@@ -144,7 +140,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                     navController.navigate(Screen.EditProfile.route)
                 },
                 onLogoutClick = {
-                    authVm.logout() // Llamar a logout en el vm
+                    authVm.logout()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             inclusive = true

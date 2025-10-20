@@ -1,13 +1,19 @@
-package com.example.restaurapp.model.local.user
+package com.example.restaurapp.model.local
+
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.restaurapp.model.local.concepts.ConceptDao
+import com.example.restaurapp.model.local.concepts.ConceptEntity
+import com.example.restaurapp.model.local.user.UserDao
+import com.example.restaurapp.model.local.user.UserEntity
 
-@Database(entities = [UserEntity::class], version = 1, exportSchema = false)
+@Database(entities = [UserEntity::class, ConceptEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
+    abstract fun conceptDao(): ConceptDao
 
     companion object {
         @Volatile
@@ -20,6 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database"
                 )
+                    .fallbackToDestructiveMigration()
                     .build().also {
                         INSTANCE = it
                     }
