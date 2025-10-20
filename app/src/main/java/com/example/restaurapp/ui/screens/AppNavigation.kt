@@ -21,14 +21,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.restaurapp.model.local.AppDatabase
 import com.example.restaurapp.model.repository.AuthRepository
+import com.example.restaurapp.model.repository.ConceptRepository
 import com.example.restaurapp.model.repository.UserRepository
 import com.example.restaurapp.navigation.Screen
 import com.example.restaurapp.ui.RegisterScreen
+import com.example.restaurapp.ui.screens.addConceptScreen.AddConceptScreen
 import com.example.restaurapp.ui.screens.homeScreen.HomeScreen
 import com.example.restaurapp.ui.screens.loginScreen.LoginScreen
 import com.example.restaurapp.ui.screens.profileScreen.ProfileScreen
 import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.AuthViewModelFactory
+import com.example.restaurapp.viewmodel.ConceptViewModel
+import com.example.restaurapp.viewmodel.ConceptViewModelFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -150,6 +154,28 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 }
             )
         }
+
+
+        composable(Screen.AddConcept.route) {
+            // 1. Obtén el contexto
+            val context = LocalContext.current
+
+            // 2. Crea el ViewModel usando su Factory
+            val conceptViewModel: ConceptViewModel = viewModel(
+                factory = ConceptViewModelFactory(
+                    repository = ConceptRepository(AppDatabase.get(context).conceptDao())
+                )
+            )
+
+            // 3. Pasa el ViewModel y la acción de navegar hacia atrás
+            AddConceptScreen(
+                vm = conceptViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+
+
 
         // --- Edit Profile Screen ---
 //        composable(route = Screen.EditProfile.route) {

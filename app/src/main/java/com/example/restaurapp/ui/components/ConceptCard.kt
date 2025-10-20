@@ -27,10 +27,11 @@ fun ConceptCard(
     text: String,
     iconRes: Int,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Card(
-        onClick = { /* TODO */ },
+        onClick = onClick,
         modifier = modifier.height(180.dp), // Altura fija para consistencia
         colors = CardDefaults.cardColors(containerColor = color)
     ) {

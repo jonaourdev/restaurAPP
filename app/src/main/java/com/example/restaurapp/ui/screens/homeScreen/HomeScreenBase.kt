@@ -44,9 +44,6 @@ fun HomeScreenBase(
     titleStyle: TextStyle,
     spaceAfterSearch: Dp,
     spaceAfterTitle: Dp,
-    // 1. AÑADE LOS EVENTOS COMO PARÁMETROS. NO NAVEGAN, SOLO NOTIFICAN.
-    onNavigateToFormative: () -> Unit,
-    onNavigateToTechnical: () -> Unit,
     onNavigateToAddContent: () -> Unit
 ){
     Column(
@@ -81,14 +78,14 @@ fun HomeScreenBase(
                 text = "CONCEPTOS FORMATIVOS",
                 iconRes = R.drawable.laurel,
                 color = DuocYellow,
-                onClick = onNavigateToFormative, // Notifica el evento de clic
+                onClick = onNavigateToAddContent, // Notifica el evento de clic
                 modifier = Modifier.weight(1f)
             )
             ConceptCard(
                 text = "CONCEPTOS TÉCNICOS",
                 iconRes = R.drawable.capitel,
                 color = DuocBlue,
-                onClick = onNavigateToTechnical, // Notifica el evento de clic
+                onClick = onNavigateToAddContent, // Notifica el evento de clic
                 modifier = Modifier.weight(1f)
             )
         }

@@ -7,6 +7,7 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.example.restaurapp.navigation.Screen
 import com.example.restaurapp.ui.screens.bottomNavBarScreen.BottomNavBarScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -16,7 +17,8 @@ fun HomeScreen(
     navController: NavController
 ){
     val currentRoute = navController.currentDestination?.route
-    
+    val navigateToAddConcept = { navController.navigate(Screen.AddConcept.route) }
+
     Scaffold(
         bottomBar = {
             BottomNavBarScreen(navController = navController, currentRoute = currentRoute)
@@ -24,13 +26,16 @@ fun HomeScreen(
     ) { innerPadding ->
         when (windowSizeClass.widthSizeClass) {
             WindowWidthSizeClass.Compact -> {
-                HomeScreenCompact(modifier = Modifier.padding(innerPadding))
+                HomeScreenCompact(modifier = Modifier.padding(innerPadding),
+                    onNavigateToAddContent = navigateToAddConcept)
             }
             WindowWidthSizeClass.Medium -> {
-                HomeScreenMedium(modifier = Modifier.padding(innerPadding))
+                HomeScreenMedium(modifier = Modifier.padding(innerPadding),
+                    onNavigateToAddContent = navigateToAddConcept)
             }
             WindowWidthSizeClass.Expanded -> {
-                HomeScreenExpanded(modifier = Modifier.padding(innerPadding))
+                HomeScreenExpanded(modifier = Modifier.padding(innerPadding),
+                    onNavigateToAddContent = navigateToAddConcept)
             }
         }
     }

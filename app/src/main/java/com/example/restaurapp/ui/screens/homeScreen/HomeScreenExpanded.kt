@@ -10,12 +10,14 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenExpanded(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigateToAddContent: () -> Unit
 ) {
     HomeScreenBase(
         mainPadding = 64.dp,
         titleStyle = MaterialTheme.typography.headlineLarge,
         spaceAfterSearch = 24.dp,
-        spaceAfterTitle = 24.dp
+        spaceAfterTitle = 24.dp,
+        onNavigateToAddContent = onNavigateToAddContent
     )
 }

@@ -12,7 +12,7 @@ sealed class Screen(val route: String) {
 
     data object FormativeConcept : Screen("formative_concept")
 
-    data object AddContent : Screen("add_content")
+    data object AddConcept : Screen("add_content")
 
     data class FormativeDetail(val conceptId: String) : Screen("formative_detail/$conceptId") {
         companion object {

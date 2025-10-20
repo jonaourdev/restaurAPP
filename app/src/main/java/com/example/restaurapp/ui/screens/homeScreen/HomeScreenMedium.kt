@@ -27,12 +27,14 @@ import com.example.restaurapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenMedium(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigateToAddContent: () -> Unit
 ) {
     HomeScreenBase(
         mainPadding = 32.dp,
         titleStyle = MaterialTheme.typography.headlineLarge,
         spaceAfterSearch = 24.dp,
-        spaceAfterTitle = 24.dp
+        spaceAfterTitle = 24.dp,
+        onNavigateToAddContent = onNavigateToAddContent
     )
 }
