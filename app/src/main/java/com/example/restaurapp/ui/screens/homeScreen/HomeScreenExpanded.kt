@@ -1,9 +1,20 @@
-package com.example.restaurapp.ui.screens.productScreen
+package com.example.restaurapp.ui.screens.homeScreen
 
-import androidx.compose.foundation.layout.*
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -12,9 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -22,26 +30,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.restaurapp.R
-
+import com.example.restaurapp.ui.theme.RestaurAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductScreenMedium(modifier: Modifier = Modifier) {
+fun HomeScreenExpanded(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxSize()
-            .padding(32.dp), // Más padding para pantallas más grandes
-        horizontalArrangement = Arrangement.spacedBy(32.dp),
+            .padding(64.dp), // Aún más padding
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Columna Izquierda: Búsqueda y Título
-        Column(modifier = Modifier.weight(0.8f)) {
+        // Columna Izquierda: Título y Búsqueda
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = "BLOQUES DE CONOCIMIENTO",
-                style = MaterialTheme.typography.headlineMedium, // Texto más grande
+                style = MaterialTheme.typography.headlineLarge, // El texto más grande
                 fontWeight = FontWeight.Bold
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(24.dp))
             OutlinedTextField(
                 value = "",
                 onValueChange = {},
@@ -52,18 +59,20 @@ fun ProductScreenMedium(modifier: Modifier = Modifier) {
             )
         }
 
-        // Columna Derecha: Tarjetas
-        Row(
-            modifier = Modifier.weight(1.2f),
-            horizontalArrangement = Arrangement.spacedBy(24.dp)
+        Spacer(Modifier.width(64.dp))
+
+        // Columna Derecha: Tarjetas apiladas verticalmente
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Reutilizamos la misma tarjeta, pero ahora es más grande
             // Tarjeta de Conceptos Formativos
             Card(
                 onClick = { /*TODO*/ },
-                modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFC0A069)) // Color dorado
+                modifier = Modifier.fillMaxWidth(), // Correcto: ocupa el ancho de la columna padre
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFC0A069))
             ) {
+                // Esta columna interna está bien, no necesita cambios
                 Column(
                     modifier = Modifier
                         .padding(vertical = 24.dp, horizontal = 8.dp)
@@ -75,12 +84,14 @@ fun ProductScreenMedium(modifier: Modifier = Modifier) {
                     Icon(painterResource(id = R.drawable.laurel), contentDescription = null, tint = Color.White)
                 }
             }
-            // Tarjeta de Conceptos Técnicos
+
+            // Tarjeta de Conceptos Técnicos (CORREGIDA)
             Card(
                 onClick = { /*TODO*/ },
-                modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF3B6B9C)) // Color azul
+                modifier = Modifier.fillMaxWidth(), // Correcto: ocupa el ancho de la columna padre
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF3B6B9C))
             ) {
+                // Esta columna interna también está bien, no necesita cambios
                 Column(
                     modifier = Modifier
                         .padding(vertical = 24.dp, horizontal = 8.dp)
@@ -94,10 +105,4 @@ fun ProductScreenMedium(modifier: Modifier = Modifier) {
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun ProductScreenMediumPreview(){
-    ProductScreenMedium()
 }

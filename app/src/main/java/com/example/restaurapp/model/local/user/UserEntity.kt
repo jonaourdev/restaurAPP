@@ -1,10 +1,10 @@
-package com.example.restaurapp.model.local.registerLocal
+package com.example.restaurapp.model.local.user
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "registros")
-data class RegisterEntity (
+@Entity(tableName = "usuarios")
+data class UserEntity (
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val nombreCompleto: String,

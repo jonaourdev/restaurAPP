@@ -2,13 +2,11 @@ package com.example.restaurapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.restaurapp.model.local.registerLocal.RegisterEntity
-import com.example.restaurapp.model.repository.RegisterRepository
+import com.example.restaurapp.model.repository.AuthRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -20,18 +18,11 @@ data class FormRegister(
     val contrasenna: String = "",
     val confirmarContrasenna: String = "",
     val error: String? = null,
-    val success: Boolean = false
+    val success: Boolean = false,
+    val isLoading: Boolean = false
 )
 
-class RegisterViewModel(private val repo: RegisterRepository) : ViewModel() {
-
-    // Lista registros
-    val registros: StateFlow<List<RegisterEntity>> =
-        repo.observarRegistros().stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+class RegisterViewModel(private val repo: AuthRepository) : ViewModel() {
 
     // Estado del formulario
     private val _form = MutableStateFlow(FormRegister())
@@ -39,51 +30,51 @@ class RegisterViewModel(private val repo: RegisterRepository) : ViewModel() {
 
     // Ingreso de datos
     fun limpiarFormulario() = run { _form.value = FormRegister() }
-    fun onChangeNombreCompleto(v: String) = _form.update { it.copy(nombreCompleto = v,) }
-    fun onChangeCorreo(v: String) = _form.update { it.copy(correo = v,) }
-    fun onChangeContrasenna(v: String) = _form.update { it.copy(contrasenna = v,) }
-    fun onChangeConfirmarContrasenna(v: String) = _form.update { it.copy(confirmarContrasenna = v,) }
+    fun onChangeNombreCompleto(v: String) = _form.update { it.copy(nombreCompleto = v) }
+    fun onChangeCorreo(v: String) = _form.update { it.copy(correo = v) }
+    fun onChangeContrasenna(v: String) = _form.update { it.copy(contrasenna = v) }
+    fun onChangeConfirmarContrasenna(v: String) = _form.update { it.copy(confirmarContrasenna = v) }
 
     // Registrar usuario con validaciones
-    fun guardar() = viewModelScope.launch {
+    fun registrar() = viewModelScope.launch {
         val f = _form.value
 
-        // Validar campos vacíos
+        _form.update { it.copy(isLoading = true, error = null) }
+        delay(3000)
+
+        // --- Validaciones de UI  ---
         if (f.nombreCompleto.isBlank() || f.correo.isBlank() || f.contrasenna.isBlank()) {
-            _form.update { it.copy(error = "Completa todos los campos.",) }
+            _form.update { it.copy(error = "Completa todos los campos.") }
             return@launch
         }
 
-        // Validar formato del correo
         val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
         if (!emailRegex.matches(f.correo.trim())) {
-            _form.update { it.copy(error = "Ingresa un correo válido.",) }
+            _form.update { it.copy(error = "Ingresa un correo válido.") }
             return@launch
         }
 
-        // Validar longitud mínima de contraseña
         if (f.contrasenna.length < 8) {
-            _form.update { it.copy(error = "La contraseña debe tener al menos 8 caracteres.",) }
+            _form.update { it.copy(error = "La contraseña debe tener al menos 8 caracteres.") }
             return@launch
         }
 
-        // Validar coincidencia de contraseñas
         if (f.contrasenna != f.confirmarContrasenna) {
-            _form.update { it.copy(error = "Las contraseñas no coinciden.",) }
+            _form.update { it.copy(error = "Las contraseñas no coinciden.") }
             return@launch
         }
 
-        // Validar si existe el mismo correo
-        val existeCorreo = repo.existeCorreo(f.correo)
-        if (existeCorreo) {
-            _form.update { it.copy(error = "El correo ya está registrado.",) }
-            return@launch
+        // --- Lógica de negocio delegada al repositorio ---
+        try {
+            repo.register(
+                nombreCompleto = f.nombreCompleto,
+                correo = f.correo,
+                contrasenna = f.contrasenna
+            )
+            _form.update { it.copy(success = true) }
+        } catch (e: Exception) {
+            // Captura la excepción del repositorio
+            _form.update { it.copy(error = e.message) }
         }
-
-        // Si es correcto -> guardar en BD
-        repo.guardar(f.id, f.nombreCompleto, f.correo, f.contrasenna)
-        // Mostrar éxito y limpiar formulario
-        _form.update { it.copy(success = true, error = null) }
-
     }
 }

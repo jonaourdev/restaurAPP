@@ -1,17 +1,20 @@
-package com.example.restaurapp.ui.screens.navBarScreen
+package com.example.restaurapp.ui.screens.bottomNavBarScreen
 
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PermIdentity
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.restaurapp.navigation.Screen
 
 @Composable
-fun NavBarScreen(
+fun BottomNavBarScreen(
     navController: NavController,
     currentRoute: String?
 ) {
@@ -39,9 +42,9 @@ fun NavBarScreen(
 
         // --- Favoritos ---
         NavigationBarItem(
-            selected = currentRoute == Screen.Register.route,
+            selected = currentRoute == Screen.Favorites.route,
             onClick = {
-                navController.navigate(Screen.Register.route) {
+                navController.navigate(Screen.Favorites.route) {
                     popUpTo(navController.graph.findStartDestination().id) {
                         saveState = true
                     }

@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui.screens.productScreen
+package com.example.restaurapp.ui.screens.homeScreen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -23,7 +23,7 @@ import com.example.restaurapp.ui.theme.RestaurAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductScreenCompact(modifier: Modifier = Modifier) {
+fun HomeScreenCompact(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -105,13 +105,5 @@ fun ConceptCard(
                 modifier = Modifier.size(40.dp)
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProductScreenCompactPreview() {
-    RestaurAppTheme {
-        ProductScreenCompact()
     }
 }
