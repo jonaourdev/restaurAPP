@@ -1,5 +1,7 @@
 package com.example.restaurapp.ui.screens
 
+import android.app.Activity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.getValue // Esta importación es clave
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -9,9 +11,11 @@ import com.example.restaurapp.model.local.user.AppDatabase
 import com.example.restaurapp.model.repository.AuthRepository
 import com.example.restaurapp.viewmodel.RegisterViewModelFactory
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -80,6 +84,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             }
 
             LoginScreen(
+                windowSizeClass = windowSizeClass,
                 vm = loginVm,
                 isGuestLoading = isGuestLoading,
                 // onLoginSuccess = { /* Ya no se necesita aquí */ }, // <-- PARÁMETRO ELIMINADO
