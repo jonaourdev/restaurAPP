@@ -25,6 +25,7 @@ import com.example.restaurapp.navigation.Screen
 import com.example.restaurapp.ui.RegisterScreen
 import com.example.restaurapp.ui.screens.homeScreen.HomeScreen
 import com.example.restaurapp.ui.screens.loginScreen.LoginScreen
+import com.example.restaurapp.ui.screens.profileScreen.ProfileScreen
 import com.example.restaurapp.ui.screens.profileScreen.ProfileScreenBase
 import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.AuthViewModelFactory
@@ -132,7 +133,9 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         // --- Profile Screen ---
         composable(route = Screen.Profile.route) {
             // Pasamos el mismo ViewModel para acceder a `currentUser` y `logout()`
-            ProfileScreenBase(
+            ProfileScreen(
+                navController = navController,
+                windowSizeClass = windowSizeClass,
                 vm = authVm,
                 onLogoutClick = {
                     // Navegamos al login y limpiamos todo el historial de navegación.

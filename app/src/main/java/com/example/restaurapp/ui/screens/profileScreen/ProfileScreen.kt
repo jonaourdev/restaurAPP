@@ -11,29 +11,44 @@ import com.example.restaurapp.ui.screens.bottomNavBarScreen.BottomNavBarScreen
 import com.example.restaurapp.ui.screens.homeScreen.HomeScreenCompact
 import com.example.restaurapp.ui.screens.homeScreen.HomeScreenExpanded
 import com.example.restaurapp.ui.screens.homeScreen.HomeScreenMedium
+import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     windowSizeClass: WindowSizeClass,
+    vm: AuthViewModel,
+    onLogoutClick: () -> Unit,
     navController: NavController
 ){
     val currentRoute = navController.currentDestination?.route
 
-    Scaffold(
+    Scaffold (
         bottomBar = {
             BottomNavBarScreen(navController = navController, currentRoute = currentRoute)
         }
     ) { innerPadding ->
         when (windowSizeClass.widthSizeClass) {
             WindowWidthSizeClass.Compact -> {
-                HomeScreenCompact(modifier = Modifier.padding(innerPadding))
+                ProfileScreenCompact(
+                    modifier = Modifier.padding(innerPadding),
+                    vm = vm,
+                    onLogoutClick = onLogoutClick
+                )
             }
             WindowWidthSizeClass.Medium -> {
-                HomeScreenMedium(modifier = Modifier.padding(innerPadding))
+                ProfileScreenMedium(
+                    modifier = Modifier.padding(innerPadding),
+                    vm = vm,
+                    onLogoutClick = onLogoutClick
+                )
             }
             WindowWidthSizeClass.Expanded -> {
-                HomeScreenExpanded(modifier = Modifier.padding(innerPadding))
+                ProfileScreenExpanded(
+                    modifier = Modifier.padding(innerPadding),
+                    vm = vm,
+                    onLogoutClick = onLogoutClick
+                )
             }
         }
     }

@@ -18,7 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.restaurapp.viewmodel.AuthViewModel
@@ -26,32 +28,41 @@ import com.example.restaurapp.viewmodel.AuthViewModel
 @Composable
 fun ProfileScreenBase(
     // 2. CAMBIAR EL TIPO DE VIEWMODEL EN LOS PARÁMETROS
+    modifier: Modifier = Modifier,
     vm: AuthViewModel,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    horizontalPadding: Dp,
+    spaceBeforeAvatar: Dp,
+    avatarSize: Dp,
+    nameTextStyle: TextStyle,
+    emailTextStyle: TextStyle,
+    spaceAfterAvatar: Dp,
+    cardAndButtonWidthFraction: Float
 ) {
     // 3. OBSERVAR EL ESTADO DEL VIEWMODEL UNIFICADO
     val uiState by vm.uiState.collectAsState()
     val currentUser = uiState.currentUser
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(16.dp),
+            .padding(horizontalPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(spaceBeforeAvatar))
 
         // --- SECCIÓN DE AVATAR Y NOMBRE ---
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(cardAndButtonWidthFraction)
         ) {
             Image(
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = "Avatar de usuario",
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(avatarSize)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surface),
                 contentScale = ContentScale.Crop
@@ -61,21 +72,22 @@ fun ProfileScreenBase(
             Text(
                 // Usamos el operador elvis (?:) para mostrar un valor por defecto si el usuario es nulo
                 text = currentUser?.nombreCompleto ?: "Usuario Invitado",
-                style = MaterialTheme.typography.headlineSmall,
+                style = nameTextStyle,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = currentUser?.correo ?: "Sin correo electrónico",
-                style = MaterialTheme.typography.bodyLarge,
+                style = emailTextStyle,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(spaceAfterAvatar))
 
         // --- SECCIÓN DE OPCIONES ---
         Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(cardAndButtonWidthFraction)
         ) {
             // Opción 1: Editar Perfil
             Card(
@@ -155,7 +167,7 @@ fun ProfileScreenBase(
                 onLogoutClick()
             },
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(cardAndButtonWidthFraction)
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
