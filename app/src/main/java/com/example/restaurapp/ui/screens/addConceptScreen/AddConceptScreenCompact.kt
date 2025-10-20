@@ -2,28 +2,39 @@ package com.example.restaurapp.ui.screens.addConceptScreen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.restaurapp.model.local.user.FamilyEntity
 import com.example.restaurapp.ui.theme.RestaurAppTheme
 
 @Composable
-fun AddContentScreenCompact(modifier: Modifier = Modifier) {
-    var selectedContentType by remember { mutableStateOf(ContentType.ConceptoTecnico) }
+fun AddContentScreenCompact(
+    modifier: Modifier = Modifier,
+    // --- 1. RECIBIMOS EL ESTADO Y LOS EVENTOS ---
+    selectedContentType: ContentType,
+    onContentTypeSelected: (ContentType) -> Unit,
+    newFamilyName: String,
+    onFamilyNameChange: (String) -> Unit,
+    newFamilyDescription: String,
+    onFamilyDescriptionChange: (String) -> Unit,
+    onSaveFamily: () -> Unit,
+    newConceptName: String,
+    onConceptNameChange: (String) -> Unit,
+    newConceptDescription: String,
+    onConceptDescriptionChange: (String) -> Unit,
+    families: List<FamilyEntity>,
+    onSaveFormativeConcept: () -> Unit,
+    onSaveTechnicalConcept: (Int) -> Unit,
+) {
+    // El estado local `selectedContentType` se ha movido hacia arriba (a AddContentScreen)
+    // El botón de guardado genérico se ha eliminado, cada formulario tendrá el suyo.
 
     Column(
         modifier = modifier
@@ -31,40 +42,40 @@ fun AddContentScreenCompact(modifier: Modifier = Modifier) {
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // pestañas de tipo de concepto
+        // Pestañas de tipo de concepto (ahora controladas desde fuera)
         ContentTypeSelector(
             selectedType = selectedContentType,
-            onTypeSelected = { selectedContentType = it }
+            onTypeSelected = onContentTypeSelected
         )
 
-        // tipo de formulario segun la pestaña
+        // Tipo de formulario según la pestaña
         when (selectedContentType) {
-            ContentType.Familia -> FamilyForm()
-            ContentType.ConceptoFormativo -> FormativeConceptForm()
-            ContentType.ConceptoTecnico -> TechnicalConceptForm()
-        }
-
-        Spacer(modifier = Modifier.weight(1f)) // Empuja el botón hacia abajo
-
-        // Botón para guardar el concepto
-        Button(
-            onClick = { /* Agregar la logica para guardado */ },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Guardar ${selectedContentType.name}",
-                modifier = Modifier.padding(8.dp)
+            // --- 2. PASAMOS EL ESTADO HACIA ABAJO A CADA FORMULARIO ---
+            ContentType.Familia -> FamilyForm(
+                name = newFamilyName,
+                onNameChange = onFamilyNameChange,
+                description = newFamilyDescription,
+                onDescriptionChange = onFamilyDescriptionChange,
+                onSaveClick = onSaveFamily
+            )
+            ContentType.ConceptoFormativo -> FormativeConceptForm(
+                name = newConceptName,
+                onNameChange = onConceptNameChange,
+                description = newConceptDescription,
+                onDescriptionChange = onConceptDescriptionChange,
+                onSaveClick = onSaveFormativeConcept
+            )
+            ContentType.ConceptoTecnico -> TechnicalConceptForm(
+                name = newConceptName,
+                onNameChange = onConceptNameChange,
+                description = newConceptDescription,
+                onDescriptionChange = onConceptDescriptionChange,
+                families = families,
+                onSaveClick = onSaveTechnicalConcept
             )
         }
     }
 }
 
-@Preview(showBackground = true, name = "AddContent Compact")
-@Composable
-fun AddContentScreenCompactPreview() {
-    RestaurAppTheme {
-        AddContentScreenCompact()
-    }
-}
