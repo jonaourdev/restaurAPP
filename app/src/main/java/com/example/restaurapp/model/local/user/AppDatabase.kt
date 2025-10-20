@@ -8,6 +8,8 @@ import androidx.room.RoomDatabase
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
+    abstract fun familyDao(): FamilyDao
+    abstract fun conceptDao(): ConceptDao
 
     companion object {
         @Volatile

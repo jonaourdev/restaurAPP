@@ -1,4 +1,4 @@
-package com.example.restaurapp.ui.screen.addConceptScreen
+package com.example.restaurapp.ui.screens.addConceptScreen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

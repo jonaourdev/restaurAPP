@@ -1,4 +1,4 @@
-package com.example.restaurapp.data.local.concept
+package com.example.restaurapp.model.local.user
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,8 +6,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.restaurapp.data.local.FormativeConceptEntity
-import com.example.restaurapp.data.local.TechnicalConceptEntity
+import com.example.restaurapp.model.local.user.FormativeConceptEntity
+import com.example.restaurapp.model.local.user.TechnicalConceptEntity
 import kotlinx.coroutines.flow.Flow
 
 /**

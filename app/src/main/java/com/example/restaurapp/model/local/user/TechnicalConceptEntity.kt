@@ -1,5 +1,5 @@
 // en app/src/main/java/com/example/restaurapp/data/local/TechnicalConceptEntity.kt
-package com.example.restaurapp.data.local
+package com.example.restaurapp.model.local.user
 
 import androidx.room.Entity
 import androidx.room.ForeignKey

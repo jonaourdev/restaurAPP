@@ -30,6 +30,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.restaurapp.ui.screen.productScreen.FormativeConceptDetailScreen
+import com.example.restaurapp.ui.screen.productScreen.FormativeConceptsScreen
+import com.example.restaurapp.ui.screen.productScreen.TechnicalConceptsScreen
+import com.example.restaurapp.ui.screens.addConceptScreen.AddContentScreen
+import com.example.restaurapp.viewmodel.AddContentViewModel
+import com.example.restaurapp.viewmodel.AddContentViewModelFactory
 
 @Composable
 fun AppNavigation(windowSizeClass: WindowSizeClass) {
@@ -139,6 +148,61 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 navController = navController
             )
         }
+
+        composable(route = Screen.TechnicalConcept.route) {
+            TechnicalConceptsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- Pantalla de Conceptos Formativos ---
+        composable(route = Screen.FormativeConcept.route) {
+            FormativeConceptsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                // Construye la ruta de detalle usando la nueva data class
+                onNavigateToDetail = { conceptId ->
+                    navController.navigate(Screen.FormativeDetail(conceptId).route)
+                }
+            )
+        }
+
+        // --- Pantalla de Detalle de Concepto Formativo (con argumento) ---
+        composable(
+            route = Screen.FormativeDetail.FULL_ROUTE, // Usa la ruta base con el placeholder desde el companion object
+            arguments = listOf(navArgument(Screen.FormativeDetail.ARG_CONCEPT_ID) { type =
+                NavType.StringType })
+        ) { backStackEntry ->
+            // Recupera el argumento de la ruta de forma segura
+            val conceptId = backStackEntry.arguments?.getString(Screen.FormativeDetail.ARG_CONCEPT_ID)
+            FormativeConceptDetailScreen(
+                conceptId = conceptId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- Pantalla para Añadir Contenido ---
+        composable(route = Screen.AddContent.route) {
+            // --- Pantalla para Añadir Contenido ---composable(route = Screen.AddContent.route) {
+            val context = LocalContext.current
+            // <<< ¡CORRECCIÓN CRÍTICA! Cambia esto por getDatabase()
+            val db = AppDatabase.get(context)
+            val familyDao = db.familyDao()
+            val conceptDao = db.conceptDao()
+
+            val factory = AddContentViewModelFactory(familyDao, conceptDao)
+            val viewModel: AddContentViewModel = viewModel(factory = factory)
+
+            // Ya no necesitas 'collectAsState' aquí si la pantalla lo hace internamente.
+
+            // ▼▼▼ ¡AQUÍ ESTÁ LA CORRECCIÓN! ▼▼▼
+            // La llamada se simplifica. Asumimos que AddContentScreen ahora
+            // recibe el ViewModel directamente para manejar su estado.
+            AddContentScreen(
+                windowSizeClass = windowSizeClass.widthSizeClass,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
 
         composable(route = Screen.Profile.route) {
             // Aquí va tu pantalla de Perfil.

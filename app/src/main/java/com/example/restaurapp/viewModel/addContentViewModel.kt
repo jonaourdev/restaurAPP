@@ -6,11 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.restaurapp.data.local.ConceptDao
-import com.example.restaurapp.data.local.FamilyDao
-import com.example.restaurapp.data.local.FamilyEntity
-import com.example.restaurapp.data.local.FormativeConceptEntity
-import com.example.restaurapp.data.local.TechnicalConceptEntity
+import com.example.restaurapp.model.local.user.ConceptDao
+import com.example.restaurapp.model.local.user.FamilyDao
+import com.example.restaurapp.model.local.user.FamilyEntity
+import com.example.restaurapp.model.local.user.FormativeConceptEntity
+import com.example.restaurapp.model.local.user.TechnicalConceptEntity
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn

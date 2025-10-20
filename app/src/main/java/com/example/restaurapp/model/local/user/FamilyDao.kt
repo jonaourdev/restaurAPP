@@ -1,4 +1,4 @@
-package com.example.restaurapp.data.local
+package com.example.restaurapp.model.local.user
 
 import androidx.room.Dao
 import androidx.room.Delete

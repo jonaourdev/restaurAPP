@@ -3,8 +3,8 @@ package com.example.restaurapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.restaurapp.data.local.ConceptDao
-import com.example.restaurapp.data.local.FamilyDao
+import com.example.restaurapp.model.local.user.ConceptDao
+import com.example.restaurapp.model.local.user.FamilyDao
 
 /**
  * Fábrica para crear una instancia de AddContentViewModel.

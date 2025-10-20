@@ -1,5 +1,5 @@
 // en app/src/main/java/com/example/restaurapp/data/local/FormativeConceptEntity.kt
-package com.example.restaurapp.data.local
+package com.example.restaurapp.model.local.user
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
