@@ -6,7 +6,10 @@ import kotlinx.coroutines.flow.Flow
 
 class ConceptRepository(private val conceptDao: ConceptDao) {
 
-    val allConcepts: Flow<List<ConceptEntity>> = conceptDao.observarTodos()
+
+    fun getAllConcepts(): Flow<List<ConceptEntity>> {
+        return conceptDao.observarTodos()
+    }
 
     suspend fun insert(concept: ConceptEntity) {
         conceptDao.insertar(concept)
@@ -15,7 +18,6 @@ class ConceptRepository(private val conceptDao: ConceptDao) {
     suspend fun update(concept: ConceptEntity) {
         conceptDao.actualizar(concept)
     }
-
 
     suspend fun delete(concept: ConceptEntity) {
         conceptDao.eliminar(concept)
