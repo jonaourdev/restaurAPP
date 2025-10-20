@@ -13,18 +13,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.restaurapp.ui.theme.DuocBlue
-import com.example.restaurapp.viewmodel.LoginViewModel
+// 1. CAMBIAR LA IMPORTACIÓN DEL VIEWMODEL
+import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    vm: LoginViewModel,
+    vm: AuthViewModel,
     isGuestLoading: Boolean,
     onGoRegister: () -> Unit,
     onGuestAccess: () -> Unit
 ) {
-    val formState by vm.form.collectAsState()
-    val isLoading = formState.isLoading || isGuestLoading
+    val uiState by vm.uiState.collectAsState()
+    val isLoading = uiState.isLoading || isGuestLoading
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -39,8 +40,6 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // ... (El resto del código de la UI no necesita cambios) ...
-                // Text, Spacers, OutlinedTextFields, Buttons... todo se queda igual.
                 Text(
                     text = "Iniciar sesión",
                     style = MaterialTheme.typography.headlineLarge,
@@ -48,7 +47,8 @@ fun LoginScreen(
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(24.dp))
-                formState.error?.let {
+                // Mostrar el error desde el estado unificado
+                uiState.error?.let {
                     Text(
                         text = it,
                         color = MaterialTheme.colorScheme.error,
@@ -58,8 +58,8 @@ fun LoginScreen(
                     )
                 }
                 OutlinedTextField(
-                    value = formState.correo,
-                    onValueChange = vm::onChangeCorreo,
+                    value = uiState.loginCorreo,
+                    onValueChange = vm::onLoginCorreoChange,
                     label = { Text("Correo electrónico") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(0.9f),
@@ -67,8 +67,8 @@ fun LoginScreen(
                 )
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = formState.contrasenna,
-                    onValueChange = vm::onChangeContrasenna,
+                    value = uiState.loginContrasenna,
+                    onValueChange = vm::onLoginContrasennaChange,
                     label = { Text("Contraseña") },
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
@@ -110,7 +110,8 @@ fun LoginScreen(
 
         if (isLoading) {
             val message = when {
-                formState.isLoading -> "¡Login exitoso!"
+                // El mensaje ahora viene del estado unificado
+                uiState.isLoading -> "¡Login exitoso!"
                 isGuestLoading -> "Ingresando como invitado..."
                 else -> ""
             }

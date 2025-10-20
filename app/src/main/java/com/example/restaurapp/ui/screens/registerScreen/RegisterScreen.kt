@@ -21,22 +21,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.restaurapp.ui.theme.DuocBlue
-import com.example.restaurapp.viewmodel.RegisterViewModel
+// 1. CAMBIAR LA IMPORTACIÓN DEL VIEWMODEL
+import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    vm: RegisterViewModel,
-    onGoLogin: () -> Unit,
-    onRegisterClick: () -> Unit
+    vm: AuthViewModel,
+    onGoLogin: () -> Unit
 ) {
-    val formState by vm.form.collectAsState()
+    val uiState by vm.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
-    val isLoading = formState.isLoading // Usamos el estado del ViewModel
+    val isLoading = uiState.isLoading // Uso del estado del ViewModel unificado
 
-    // 2. LAUNCHEDEFFECT ELIMINADO
-    // Ya no es necesario aquí, porque AppNavHost se encarga de la navegación
-    // cuando formState.success es true.
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold { padding ->
@@ -45,7 +42,6 @@ fun RegisterScreen(
                     .fillMaxSize()
                     .padding(padding)
                     .padding(horizontal = 24.dp)
-                    // Hacemos la UI de fondo semitransparente mientras carga
                     .graphicsLayer(alpha = if (isLoading) 0.5f else 1.0f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -61,7 +57,7 @@ fun RegisterScreen(
                 Spacer(Modifier.height(16.dp))
 
                 // Error
-                formState.error?.let {
+                uiState.error?.let {
                     Text(
                         text = it,
                         color = MaterialTheme.colorScheme.error,
@@ -72,29 +68,29 @@ fun RegisterScreen(
 
                 // Nombre
                 OutlinedTextField(
-                    value = formState.nombreCompleto,
-                    onValueChange = vm::onChangeNombreCompleto,
+                    value = uiState.registerNombreCompleto,
+                    onValueChange = vm::onRegisterNombreChange,
                     label = { Text("Nombre completo") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(0.9f),
-                    enabled = !isLoading // Deshabilitado mientras carga
+                    enabled = !isLoading
                 )
 
                 // Correo
                 OutlinedTextField(
-                    value = formState.correo,
-                    onValueChange = vm::onChangeCorreo,
+                    value = uiState.registerCorreo,
+                    onValueChange = vm::onRegisterCorreoChange,
                     label = { Text("Correo electrónico") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(0.9f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    enabled = !isLoading // Deshabilitado mientras carga
+                    enabled = !isLoading
                 )
 
                 // Contraseña
                 OutlinedTextField(
-                    value = formState.contrasenna,
-                    onValueChange = vm::onChangeContrasenna,
+                    value = uiState.registerContrasenna,
+                    onValueChange = vm::onRegisterContrasennaChange,
                     label = { Text("Contraseña") },
                     modifier = Modifier.fillMaxWidth(0.9f),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -104,28 +100,28 @@ fun RegisterScreen(
                             Icon(imageVector = icon, contentDescription = null)
                         }
                     },
-                    enabled = !isLoading // Deshabilitado mientras carga
+                    enabled = !isLoading
                 )
 
                 // Confirmar contraseña
                 OutlinedTextField(
-                    value = formState.confirmarContrasenna,
-                    onValueChange = vm::onChangeConfirmarContrasenna,
+                    value = uiState.registerConfirmarContrasenna,
+                    onValueChange = vm::onRegisterConfirmarContrasennaChange,
                     label = { Text("Confirmar contraseña") },
                     modifier = Modifier.fillMaxWidth(0.9f),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    enabled = !isLoading // Deshabilitado mientras carga
+                    enabled = !isLoading
                 )
 
                 Spacer(Modifier.height(24.dp))
 
                 // Botón “Registrarte”
                 Button(
-                    onClick = onRegisterClick,
+                    onClick = { vm.registrar() },
                     modifier = Modifier
                         .fillMaxWidth(0.6f)
                         .height(50.dp),
-                    enabled = !isLoading // Deshabilitado mientras carga
+                    enabled = !isLoading
                 ) {
                     Text("Registrarte")
                 }
@@ -134,14 +130,14 @@ fun RegisterScreen(
                 OutlinedButton(
                     onClick = onGoLogin,
                     modifier = Modifier.fillMaxWidth(0.6f),
-                    enabled = !isLoading // Deshabilitado mientras carga
+                    enabled = !isLoading
                 ) {
                     Text("Cancelar")
                 }
             }
         }
 
-        // --- 3. CAPA DE CARGA Y MENSAJE DE ÉXITO ---
+        // --- CAPA DE CARGA Y MENSAJE DE ÉXITO ---
         if (isLoading) {
             Box(
                 modifier = Modifier
@@ -156,7 +152,8 @@ fun RegisterScreen(
                     CircularProgressIndicator(color = Color.White)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "¡Registro exitoso!", // El mensaje se muestra durante la carga
+                        // El mensaje de éxito ahora se muestra durante el delay de 3 segundos
+                        text = "¡Registro exitoso!",
                         color = Color.White,
                         fontSize = 18.sp
                     )

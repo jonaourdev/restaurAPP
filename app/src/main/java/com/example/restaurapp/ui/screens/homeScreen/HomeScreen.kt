@@ -13,8 +13,8 @@ import com.example.restaurapp.ui.screens.bottomNavBarScreen.BottomNavBarScreen
 @Composable
 fun HomeScreen(
     windowSizeClass: WindowSizeClass,
-    navController: NavController) {
-
+    navController: NavController
+){
     val currentRoute = navController.currentDestination?.route
     
     Scaffold(
