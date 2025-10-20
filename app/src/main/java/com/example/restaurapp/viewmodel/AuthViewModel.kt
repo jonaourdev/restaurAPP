@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.restaurapp.model.local.user.UserEntity
 import com.example.restaurapp.model.repository.AuthRepository
+import com.example.restaurapp.model.repository.UserRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// 1. UN ESTADO ÚNICO PARA TODA LA AUTENTICACIÓN
 data class AuthUiState(
     // Campos para la pantalla de Login
     val loginCorreo: String = "",
@@ -23,14 +23,22 @@ data class AuthUiState(
     val registerContrasenna: String = "",
     val registerConfirmarContrasenna: String = "",
 
+    // --- CAMPOS PARA EDICIÓN DE PERFIL ---
+    val editNombreCompleto: String = "",
+    val editCorreo: String = "",
+    val updateSuccess: Boolean = false,
+
     // Estado global compartido
     val error: String? = null,
-    val success: Boolean = false,
+    val success: Boolean = false, // 'success' es para login/registro
     val isLoading: Boolean = false,
     val currentUser: UserEntity? = null
 )
 
-class AuthViewModel(private val repo: AuthRepository) : ViewModel() {
+class AuthViewModel(
+    private val authRepo: AuthRepository,
+    private val userRepo: UserRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
@@ -41,7 +49,7 @@ class AuthViewModel(private val repo: AuthRepository) : ViewModel() {
 
     fun login() = viewModelScope.launch {
         val state = _uiState.value
-        val user = repo.login(state.loginCorreo, state.loginContrasenna)
+        val user = authRepo.login(state.loginCorreo, state.loginContrasenna)
 
         if (user == null) {
             _uiState.update { it.copy(error = "Correo o contraseña inválidos.") }
@@ -81,30 +89,90 @@ class AuthViewModel(private val repo: AuthRepository) : ViewModel() {
             return@launch
         }
 
-        // --- Lógica de negocio si las validaciones pasan ---
         _uiState.update { it.copy(isLoading = true) }
         try {
-            // 1. Realiza el registro. Esta función no devuelve nada.
-            repo.register(
+            authRepo.register(
                 nombreCompleto = f.registerNombreCompleto,
                 correo = f.registerCorreo,
                 contrasenna = f.registerContrasenna
             )
-
-            // --- INICIO DE LA CORRECCIÓN ---
-            // 2. Después de registrar, busca al usuario recién creado usando su correo.
-            //    Asumimos que repo.login hace exactamente eso.
-            val newUser = repo.login(f.registerCorreo, f.registerContrasenna)
-            // --- FIN DE LA CORRECCIÓN ---
-
-            // Después de registrar, actualizamos el usuario actual y marcamos como éxito
+            val newUser = authRepo.login(f.registerCorreo, f.registerContrasenna)
             delay(3000)
-            // 3. Ahora sí, 'newUser' es un UserEntity y la asignación es correcta.
             _uiState.update { it.copy(success = true, isLoading = false, currentUser = newUser) }
         } catch (e: Exception) {
             _uiState.update { it.copy(error = e.message, isLoading = false) }
         }
     }
+
+    // --- INICIO DE LA LÓGICA DE ACTUALIZACIÓN DE PERFIL ---
+
+    // Funciones 'onChange' para los campos de edición
+    fun onEditNombreChange(v: String) = _uiState.update { it.copy(editNombreCompleto = v, error = null) }
+    fun onEditCorreoChange(v: String) = _uiState.update { it.copy(editCorreo = v, error = null) }
+
+    fun cargarDatosParaEdicion() {
+        _uiState.value.currentUser?.let { user ->
+            _uiState.update {
+                it.copy(
+                    editNombreCompleto = user.nombreCompleto,
+                    editCorreo = user.correo
+                )
+            }
+        }
+    }
+
+    fun actualizarPerfil() = viewModelScope.launch {
+        val state = _uiState.value
+        val currentUser = state.currentUser
+
+        if (currentUser == null) {
+            _uiState.update { it.copy(error = "No se puede actualizar. No hay un usuario logeado.") }
+            return@launch
+        }
+
+        // Validación
+        if (state.editNombreCompleto.isBlank() || state.editCorreo.isBlank()) {
+            _uiState.update { it.copy(error = "El nombre y el correo no pueden estar vacíos.") }
+            return@launch
+        }
+
+        _uiState.update { it.copy(isLoading = true, error = null, updateSuccess = false) }
+
+        try {
+            // Crea una copia actualizada de la entidad del usuario con los nuevos datos
+            val updatedUser = currentUser.copy(
+                nombreCompleto = state.editNombreCompleto,
+                correo = state.editCorreo
+            )
+
+            // Llama al UserRepository para realizar la actualización en la base de datos
+            userRepo.updateUser(updatedUser)
+
+            delay(2000) // Delay para feedback visual
+
+            // Actualiza el estado de la UI con el nuevo usuario y marca el éxito
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    currentUser = updatedUser, // Clave: actualiza el usuario en toda la app
+                    updateSuccess = true
+                )
+            }
+        } catch (e: Exception) {
+            _uiState.update { it.copy(isLoading = false, error = e.message) }
+        }
+    }
+
+    /**
+     * Resetea el estado de 'updateSuccess' a false.
+     * Útil para llamarlo después de mostrar un Snackbar o navegar fuera de la pantalla.
+     */
+    fun resetUpdateStatus() {
+        _uiState.update { it.copy(updateSuccess = false, error = null) }
+    }
+
+    // --- FIN DE LA LÓGICA DE ACTUALIZACIÓN ---
+
 
     // --- FUNCIÓN DE LOGOUT ---
     fun logout() {
