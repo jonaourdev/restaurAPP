@@ -27,6 +27,7 @@ import com.example.restaurapp.navigation.Screen
 import com.example.restaurapp.ui.RegisterScreen
 import com.example.restaurapp.ui.screens.addConceptScreen.AddConceptScreen
 import com.example.restaurapp.ui.screens.homeScreen.HomeScreen
+import com.example.restaurapp.ui.screens.listConceptScreen.ListConceptScreen
 import com.example.restaurapp.ui.screens.loginScreen.LoginScreen
 import com.example.restaurapp.ui.screens.profileScreen.ProfileScreen
 import com.example.restaurapp.viewmodel.AuthViewModel
@@ -62,9 +63,11 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
 
     val authRepository = AuthRepository(db.userDao())
     val userRepository = UserRepository(db.userDao())
+    val conceptRepository = ConceptRepository(db.conceptDao())
 
     val factory = AuthViewModelFactory(authRepository, userRepository)
     val authVm: AuthViewModel = viewModel(factory = factory)
+    val conceptFactory = ConceptViewModelFactory(conceptRepository)
 
     val authState by authVm.uiState.collectAsState()
 
@@ -173,6 +176,17 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 onNavigateBack = { navController.popBackStack() }
             )
         }
+
+        composable(Screen.ListConcept.route) {
+            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
+
+            ListConceptScreen(
+                vm = conceptViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToAddConcept = { navController.navigate(Screen.AddConcept.route) }
+            )
+        }
+
 
 
 

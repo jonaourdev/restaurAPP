@@ -44,7 +44,8 @@ fun HomeScreenBase(
     titleStyle: TextStyle,
     spaceAfterSearch: Dp,
     spaceAfterTitle: Dp,
-    onNavigateToAddContent: () -> Unit
+    onNavigateToAddContent: () -> Unit,
+    onNavigateToListConcept: () -> Unit
 ){
     Column(
         modifier = modifier
@@ -78,14 +79,14 @@ fun HomeScreenBase(
                 text = "CONCEPTOS FORMATIVOS",
                 iconRes = R.drawable.laurel,
                 color = DuocYellow,
-                onClick = onNavigateToAddContent, // Notifica el evento de clic
+                onClick = onNavigateToListConcept, // Notifica el evento de clic
                 modifier = Modifier.weight(1f)
             )
             ConceptCard(
                 text = "CONCEPTOS TÉCNICOS",
                 iconRes = R.drawable.capitel,
                 color = DuocBlue,
-                onClick = onNavigateToAddContent, // Notifica el evento de clic
+                onClick = onNavigateToListConcept, // Notifica el evento de clic
                 modifier = Modifier.weight(1f)
             )
         }

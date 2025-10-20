@@ -18,8 +18,9 @@ fun HomeScreen(
 ){
     val currentRoute = navController.currentDestination?.route
     val navigateToAddConcept = { navController.navigate(Screen.AddConcept.route) }
+    val navigateToListConcept = { navController.navigate(Screen.ListConcept.route)}
 
-    Scaffold(
+        Scaffold(
         bottomBar = {
             BottomNavBarScreen(navController = navController, currentRoute = currentRoute)
         }
@@ -27,15 +28,18 @@ fun HomeScreen(
         when (windowSizeClass.widthSizeClass) {
             WindowWidthSizeClass.Compact -> {
                 HomeScreenCompact(modifier = Modifier.padding(innerPadding),
-                    onNavigateToAddContent = navigateToAddConcept)
+                    onNavigateToAddContent = navigateToAddConcept,
+                    onNavigateToListConcept = navigateToListConcept)
             }
             WindowWidthSizeClass.Medium -> {
                 HomeScreenMedium(modifier = Modifier.padding(innerPadding),
-                    onNavigateToAddContent = navigateToAddConcept)
+                    onNavigateToAddContent = navigateToAddConcept,
+                    onNavigateToListConcept = navigateToListConcept)
             }
             WindowWidthSizeClass.Expanded -> {
                 HomeScreenExpanded(modifier = Modifier.padding(innerPadding),
-                    onNavigateToAddContent = navigateToAddConcept)
+                    onNavigateToAddContent = navigateToAddConcept,
+                    onNavigateToListConcept = navigateToListConcept)
             }
         }
     }

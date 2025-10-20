@@ -28,13 +28,15 @@ import com.example.restaurapp.R
 @Composable
 fun HomeScreenMedium(
     modifier: Modifier = Modifier,
-    onNavigateToAddContent: () -> Unit
+    onNavigateToAddContent: () -> Unit,
+    onNavigateToListConcept: () -> Unit
 ) {
     HomeScreenBase(
         mainPadding = 32.dp,
         titleStyle = MaterialTheme.typography.headlineLarge,
         spaceAfterSearch = 24.dp,
         spaceAfterTitle = 24.dp,
-        onNavigateToAddContent = onNavigateToAddContent
+        onNavigateToAddContent = onNavigateToAddContent,
+        onNavigateToListConcept = onNavigateToListConcept
     )
 }
