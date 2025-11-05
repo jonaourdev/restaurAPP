@@ -66,7 +66,9 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
 
     val authRepository = AuthRepository(db.userDao())
     val userRepository = UserRepository(db.userDao())
-    val conceptRepository = ConceptRepository(db.conceptDao())
+    val conceptRepository = ConceptRepository(
+        db.conceptDao(),
+        db.familyDao())
 
     val factory = AuthViewModelFactory(authRepository, userRepository)
     val authVm: AuthViewModel = viewModel(factory = factory)
@@ -179,26 +181,62 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 authVm = authVm,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToAddConcept = {
-                    navController.navigate(Screen.AddConcept.route + "?tipo=$tipo")
+                    if (tipo == ConceptType.TECNICO) {
+                        navController.navigate(Screen.AddFamily.route)
+                    } else {
+                        navController.navigate(Screen.AddConcept.route + "?tipo=$tipo")
+                    }
+                },
+
+                onNavigateToFamily = { familyId ->
+                    navController.navigate(Screen.DetailFamily.route + "/$familyId")
                 }
             )
         }
 
+        // --- Detail Family Screen ---
+        composable(
+            route = Screen.DetailFamily.route + "/{familyId}",
+            arguments = listOf(navArgument("familyId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val familyId = backStackEntry.arguments?.getLong("familyId") ?: 0
+            // Aquí iría el Composable FamilyDetailScreen(familyId = familyId, ...)
+            // Esta pantalla mostraría los conceptos filtrados por familyId
+            // y tendría un FAB para navegar a AddConceptScreen con ese familyId.
+        }
+
+        // --- Add Family Screen ---
+        composable(
+            route = Screen.AddFamily.route
+        ) {
+            // Aquí iría el Composable AddFamilyScreen(...)
+            // que contendría un formulario para llamar a vm.addFamily()
+        }
+
+
+
         // --- Add Concept Screen ---
         composable(
-            route = Screen.AddConcept.route + "?tipo={tipo}",
-            arguments = listOf(navArgument("tipo"){
+            route = Screen.AddConcept.route + "?tipo={tipo}&familyId={familyId}",
+            arguments = listOf(
+                navArgument("tipo"){
                 type = NavType.StringType
                 defaultValue = ConceptType.FORMATIVO
+            },
+                navArgument("familyId"){
+                type = NavType.LongType
+                defaultValue = -1L
             })
         ) { backStackEntry ->
             val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
             val tipo = backStackEntry.arguments?.getString("tipo") ?: ConceptType.FORMATIVO
 
-            LaunchedEffect(key1 = tipo) {
+            LaunchedEffect(key1 = tipo, key2 = familyId) {
                 conceptViewModel.onConceptTypeChange(tipo)
+                // El ViewModel ahora necesita saber el familyId para asignarlo al crear
             }
 
+            // Y el `addConcept` del ViewModel deberá ser modificado para usar este familyId
             AddConceptScreen(
                 vm = conceptViewModel,
                 onNavigateBack = {navController.popBackStack()}

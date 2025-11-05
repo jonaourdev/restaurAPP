@@ -2,10 +2,25 @@ package com.example.restaurapp.model.repository
 
 import com.example.restaurapp.model.local.concepts.ConceptDao
 import com.example.restaurapp.model.local.concepts.ConceptEntity
+import com.example.restaurapp.model.local.concepts.FamilyDao
+import com.example.restaurapp.model.local.concepts.FamilyEntity
 import kotlinx.coroutines.flow.Flow
 
-class ConceptRepository(private val conceptDao: ConceptDao) {
+class ConceptRepository(
+    private val conceptDao: ConceptDao,
+    private val familyDao: FamilyDao
+) {
 
+
+    fun getAllFamilies(): Flow<List<FamilyEntity>> = familyDao.getAllFamilies()
+
+    suspend fun insertFamily(family: FamilyEntity) {
+        familyDao.insert(family)
+    }
+
+    suspend fun updateFamily(family: FamilyEntity) {
+        familyDao.actualizar(family)
+    }
 
     fun getAllConcepts(): Flow<List<ConceptEntity>> {
         return conceptDao.observarTodos()

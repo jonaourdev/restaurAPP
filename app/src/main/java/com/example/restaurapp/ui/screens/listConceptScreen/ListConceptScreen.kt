@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -22,17 +23,19 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.navArgument
 import com.example.restaurapp.model.local.concepts.ConceptEntity
+import com.example.restaurapp.model.local.concepts.ConceptType
+import com.example.restaurapp.model.local.concepts.FamilyEntity
 import com.example.restaurapp.navigation.Screen
 import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.AuthViewModelFactory
 import com.example.restaurapp.viewmodel.ConceptViewModel
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListConceptScreen(
     vm: ConceptViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToAddConcept: () -> Unit, // Para el botón flotante
+    onNavigateToAddConcept: () -> Unit,
+    onNavigateToFamily: (Long) -> Unit,
     tipoConcepto: String,
     authVm: AuthViewModel
 ) {
@@ -41,12 +44,11 @@ fun ListConceptScreen(
     val isGuest = authState.currentUser == null
     val context = LocalContext.current
 
-    val conceptosFiltrados = uiState.concepts.filter { it.tipo == tipoConcepto }
-
     Scaffold(
         topBar = {
+            val titleText = if (tipoConcepto == ConceptType.TECNICO) "Familias de Conceptos" else "Conceptos Formativos"
             TopAppBar(
-                title = { Text("Conceptos ${tipoConcepto.lowercase().replaceFirstChar { it.uppercase() }}") },
+                title = { Text(titleText) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -59,66 +61,75 @@ fun ListConceptScreen(
                 if (isGuest) {
                     Toast.makeText(
                         context,
-                        "Los invitados no pueden añadir conceptos. Por favor, regístrese.", Toast.LENGTH_SHORT).show()
+                        "Los invitados no pueden añadir. Por favor, regístrese.", Toast.LENGTH_SHORT
+                    ).show()
                 } else {
                     onNavigateToAddConcept()
                 }
             }) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir Concepto")
+                val iconDesc = if (tipoConcepto == ConceptType.TECNICO) "Añadir Familia" else "Añadir Concepto"
+                Icon(Icons.Default.Add, contentDescription = iconDesc)
             }
         }
     ) { paddingValues ->
-        // Contenido Principal
         Box(
             modifier = Modifier
                 .padding(paddingValues)
-                .fillMaxSize()
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             when {
-                // Estado de Carga
                 uiState.isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    CircularProgressIndicator()
                 }
-                // Estado de Error
                 uiState.error != null -> {
                     Text(
                         text = "Error: ${uiState.error}",
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp)
+                        modifier = Modifier.padding(16.dp)
                     )
                 }
-                // Estado Vacío
-                uiState.concepts.isEmpty() -> {
-                    Text(
-                        text = "Aún no has guardado ningún concepto.\n¡Presiona el botón '+' para empezar!",
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp)
-                    )
-                }
-
-                //Comprobación lista filtrada
-                conceptosFiltrados.isEmpty() -> {
-                    Text(
-                        text = "Aún no hay conceptos ${tipoConcepto.lowercase()}s.",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center).padding(16.dp)
-                    )
-                }
-                // Estado con Contenido
                 else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(conceptosFiltrados) { concept ->
-                            ConceptListItem(concept = concept)
+                    if (tipoConcepto == ConceptType.TECNICO) {
+                        // --- Lógica para Familias Técnicas ---
+                        if (uiState.families.isEmpty()) {
+                            Text(
+                                text = "Aún no hay familias de conceptos técnicos.\n¡Presiona '+' para crear la primera!",
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(uiState.families) { family ->
+                                    FamilyListItem(family = family, onClick = {
+                                        onNavigateToFamily(family.id)
+                                    })
+                                }
+                            }
+                        }
+                    } else {
+                        val conceptosFiltrados = uiState.concepts.filter { it.tipo == tipoConcepto }
+                        if (conceptosFiltrados.isEmpty()) {
+                            Text(
+                                text = "Aún no hay conceptos formativos.\n¡Presiona '+' para añadir el primero!",
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(conceptosFiltrados) { concept ->
+                                    ConceptListItem(concept = concept)
+                                }
+                            }
                         }
                     }
                 }
@@ -149,3 +160,32 @@ fun ConceptListItem(concept: ConceptEntity) {
         }
     }
 }
+
+@Composable
+fun FamilyListItem(family: FamilyEntity, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(family.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                if (!family.description.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(family.description, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Ver detalles")
+        }
+    }
+}
+
+
+
