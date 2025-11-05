@@ -44,8 +44,8 @@ fun HomeScreenBase(
     titleStyle: TextStyle,
     spaceAfterSearch: Dp,
     spaceAfterTitle: Dp,
-    onNavigateToAddContent: () -> Unit,
-    onNavigateToListConcept: () -> Unit
+    onGoToListaFormativos: () -> Unit,
+    onGoToListaTecnicos: () -> Unit
 ){
     Column(
         modifier = modifier
@@ -73,51 +73,21 @@ fun HomeScreenBase(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 2. CONECTA LOS EVENTOS A LAS TARJETAS EXISTENTES
             // IMPORTANTE: Esto asume que tu Composable ConceptCard tiene un parámetro onClick
             ConceptCard(
                 text = "CONCEPTOS FORMATIVOS",
                 iconRes = R.drawable.laurel,
                 color = DuocYellow,
-                onClick = onNavigateToListConcept, // Notifica el evento de clic
+                onClick = onGoToListaFormativos, // Notifica el evento de clic
                 modifier = Modifier.weight(1f)
             )
             ConceptCard(
                 text = "CONCEPTOS TÉCNICOS",
                 iconRes = R.drawable.capitel,
                 color = DuocBlue,
-                onClick = onNavigateToListConcept, // Notifica el evento de clic
+                onClick = onGoToListaTecnicos, // Notifica el evento de clic
                 modifier = Modifier.weight(1f)
             )
-        }
-
-        // 3. AÑADE LA NUEVA TARJETA PARA "AÑADIR CONTENIDO"
-        Card(
-            onClick = onNavigateToAddContent, // Notifica el nuevo evento de clic
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Añadir Contenido",
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-                Spacer(Modifier.width(16.dp))
-                Text(
-                    text = "AÑADIR NUEVO CONCEPTO",
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
         }
     }
 }

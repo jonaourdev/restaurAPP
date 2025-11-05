@@ -1,7 +1,9 @@
 package com.example.restaurapp.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.restaurapp.model.local.AppDatabase
 import com.example.restaurapp.model.repository.AuthRepository
 import com.example.restaurapp.model.repository.UserRepository
 import java.lang.IllegalArgumentException
@@ -31,5 +33,14 @@ class AuthViewModelFactory(
         }
         // Si se pide crear otro tipo de ViewModel que esta factory no conoce, lanza un error.
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+    }
+
+    companion object{
+        fun getInstance(context: Context): AuthViewModelFactory {
+            val db = AppDatabase.get(context)
+            val authRepository = AuthRepository(db.userDao())
+            val userRepository = UserRepository(db.userDao())
+            return AuthViewModelFactory(authRepository, userRepository)
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.example.restaurapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.restaurapp.model.local.concepts.ConceptEntity
+import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.model.repository.ConceptRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +15,7 @@ data class ConceptUiState(
     // Campos para el formulario de creación/edición de conceptos
     val nombreConcepto: String = "",
     val descripcion: String = "",
+    val tipoSeleccionado: String = ConceptType.FORMATIVO,
 
     // Campo para la funcionalidad de búsqueda
     val searchQuery: String = "",
@@ -48,6 +50,11 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     fun onDescriptionChange(description: String) {
         _uiState.update { it.copy(descripcion = description, error = null) }
     }
+
+    fun onConceptTypeChange(tipo: String){
+        _uiState.update { it.copy(tipoSeleccionado = tipo) }
+    }
+
 
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
@@ -87,7 +94,8 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         try {
             val newConcept = ConceptEntity(
                 nombreConcepto = state.nombreConcepto.trim(),
-                descripcion = state.descripcion.trim()
+                descripcion = state.descripcion.trim(),
+                tipo = state.tipoSeleccionado
             )
             conceptRepository.insert(newConcept)
             _uiState.update {
