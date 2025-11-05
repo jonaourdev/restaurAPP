@@ -32,7 +32,9 @@ fun AddConceptScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Agregar Nuevo Concepto") },
+                title = { val tipo = uiState.tipoSeleccionado.lowercase()
+                    .replaceFirstChar { it.uppercase() }
+                    Text("Añadir Concepto $tipo") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")

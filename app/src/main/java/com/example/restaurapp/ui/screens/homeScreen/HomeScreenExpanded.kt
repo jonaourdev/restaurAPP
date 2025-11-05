@@ -11,15 +11,15 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HomeScreenExpanded(
     modifier: Modifier = Modifier,
-    onNavigateToAddContent: () -> Unit,
-    onNavigateToListConcept: () -> Unit
+    onGoToListaFormativos: () -> Unit,
+    onGoToListaTecnicos: () -> Unit
 ) {
     HomeScreenBase(
         mainPadding = 64.dp,
         titleStyle = MaterialTheme.typography.headlineLarge,
         spaceAfterSearch = 24.dp,
         spaceAfterTitle = 24.dp,
-        onNavigateToAddContent = onNavigateToAddContent,
-        onNavigateToListConcept = onNavigateToListConcept
+        onGoToListaFormativos = onGoToListaFormativos,
+        onGoToListaTecnicos = onGoToListaTecnicos
     )
 }

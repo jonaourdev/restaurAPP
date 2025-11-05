@@ -9,15 +9,15 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HomeScreenCompact(
     modifier: Modifier = Modifier,
-    onNavigateToAddContent: () -> Unit,
-    onNavigateToListConcept: () -> Unit
+    onGoToListaFormativos: () -> Unit,
+    onGoToListaTecnicos: () -> Unit
 ) {
     HomeScreenBase(
         mainPadding = 16.dp,
         titleStyle = MaterialTheme.typography.titleLarge,
         spaceAfterSearch = 32.dp,
         spaceAfterTitle = 16.dp,
-        onNavigateToAddContent = onNavigateToAddContent,
-        onNavigateToListConcept = onNavigateToListConcept
+        onGoToListaFormativos = onGoToListaFormativos,
+        onGoToListaTecnicos = onGoToListaTecnicos
     )
 }

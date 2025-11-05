@@ -16,16 +16,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.restaurapp.model.local.AppDatabase
 import com.example.restaurapp.model.repository.AuthRepository
 import com.example.restaurapp.model.repository.ConceptRepository
 import com.example.restaurapp.model.repository.UserRepository
 import com.example.restaurapp.navigation.Screen
 import com.example.restaurapp.ui.RegisterScreen
-import com.example.restaurapp.ui.screens.addConceptScreen.AddConceptScreen
 import com.example.restaurapp.ui.screens.homeScreen.HomeScreen
 import com.example.restaurapp.ui.screens.listConceptScreen.ListConceptScreen
 import com.example.restaurapp.ui.screens.loginScreen.LoginScreen
@@ -36,6 +37,8 @@ import com.example.restaurapp.viewmodel.ConceptViewModel
 import com.example.restaurapp.viewmodel.ConceptViewModelFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.example.restaurapp.model.local.concepts.ConceptType
+import com.example.restaurapp.ui.screens.addConceptScreen.AddConceptScreen
 
 @Composable
 fun AppNavigation(windowSizeClass: WindowSizeClass) {
@@ -133,7 +136,8 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         composable(route = Screen.Home.route) {
             HomeScreen(
                 windowSizeClass = windowSizeClass,
-                navController = navController
+                navController = navController,
+                authVm = authVm
             )
         }
 
@@ -158,32 +162,48 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-
-        composable(Screen.AddConcept.route) {
-            val context = LocalContext.current
-
-            val conceptViewModel: ConceptViewModel = viewModel(
-                factory = ConceptViewModelFactory(
-                    repository = ConceptRepository(AppDatabase.get(context).conceptDao())
-                )
-            )
-
-            AddConceptScreen(
-                vm = conceptViewModel,
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Screen.ListConcept.route) {
-            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory)
+        // --- List Screen ---
+        composable(
+            route = Screen.ListConcept.route + "?tipo={tipo}",
+            arguments = listOf(navArgument("tipo"){
+                type = NavType.StringType
+                defaultValue = ConceptType.FORMATIVO
+            })
+        ) { backStackEntry ->
+            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
+            val tipo = backStackEntry.arguments?.getString("tipo") ?: ConceptType.FORMATIVO
 
             ListConceptScreen(
                 vm = conceptViewModel,
+                tipoConcepto = tipo,
+                authVm = authVm,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToAddConcept = { navController.navigate(Screen.AddConcept.route) }
+                onNavigateToAddConcept = {
+                    navController.navigate(Screen.AddConcept.route + "?tipo=$tipo")
+                }
             )
         }
 
+        // --- Add Concept Screen ---
+        composable(
+            route = Screen.AddConcept.route + "?tipo={tipo}",
+            arguments = listOf(navArgument("tipo"){
+                type = NavType.StringType
+                defaultValue = ConceptType.FORMATIVO
+            })
+        ) { backStackEntry ->
+            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
+            val tipo = backStackEntry.arguments?.getString("tipo") ?: ConceptType.FORMATIVO
+
+            LaunchedEffect(key1 = tipo) {
+                conceptViewModel.onConceptTypeChange(tipo)
+            }
+
+            AddConceptScreen(
+                vm = conceptViewModel,
+                onNavigateBack = {navController.popBackStack()}
+            )
+        }
 
 
 
@@ -199,3 +219,4 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
 //        }
     }
 }
+
