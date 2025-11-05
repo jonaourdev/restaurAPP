@@ -20,7 +20,6 @@ class AuthRepository (private val dao: UserDao) {
     suspend fun login(correo: String, contrasenna: String): UserEntity? {
         val user = dao.obtenerPorCorreo(correo.trim())
 
-        // Comprueba si el usuario existe y si la contraseña coincide.
         return if (user != null && user.contrasenna == contrasenna) {
             user
         } else {

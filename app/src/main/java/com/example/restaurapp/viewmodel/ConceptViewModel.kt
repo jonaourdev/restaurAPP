@@ -38,11 +38,9 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     val uiState: StateFlow<ConceptUiState> = _uiState.asStateFlow()
 
     init {
-        // Carga inicial de todos los conceptos cuando el ViewModel se crea
         fetchAllConcepts()
     }
 
-    // --- FUNCIONES PARA MANEJAR CAMBIOS EN LOS FORMULARIOS ---
     fun onConceptNameChange(name: String) {
         _uiState.update { it.copy(nombreConcepto = name, error = null) }
     }
@@ -58,7 +56,6 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
 
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
-        // (Opcional) Aquí podrías añadir lógica para filtrar la lista 'concepts' en tiempo real
     }
 
 
@@ -67,11 +64,9 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         _uiState.update { it.copy(isLoading = true, error = null) }
         try {
             conceptRepository.getAllConcepts().collect { conceptList ->
-                _uiState.update { currentState -> // Renombro "it" a "currentState" para mayor claridad
+                _uiState.update { currentState ->
                     currentState.copy(
                         isLoading = false,
-                        // ANTES (Incorrecto): concepts = conceptList
-                        // AHORA (Correcto):
                         concepts = conceptList
                     )
                 }
@@ -102,7 +97,6 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
                 it.copy(
                     isLoading = false,
                     successMessage = "Concepto '${newConcept.nombreConcepto}' añadido con éxito.",
-                    // Limpiamos los campos del formulario tras el éxito
                     nombreConcepto = "",
                     descripcion = ""
                 )
@@ -117,7 +111,6 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     }
 
 
-    // --- FUNCIONES DE UTILIDAD PARA EL ESTADO ---
     fun clearMessages() {
         _uiState.update { it.copy(error = null, successMessage = null) }
     }

@@ -31,7 +31,7 @@ fun HomeTopBar(
     query: String,
     onQueryChange: (String) -> Unit
 ) {
-    // 1. ESTADO PARA CONTROLAR LA VISIBILIDAD DE LA BÚSQUEDA
+    // ESTADO PARA CONTROLAR LA VISIBILIDAD DE LA BÚSQUEDA
     var isSearchActive by remember { mutableStateOf(false) }
 
     TopAppBar(
@@ -39,20 +39,17 @@ fun HomeTopBar(
             containerColor = MaterialTheme.colorScheme.surface,
             titleContentColor = MaterialTheme.colorScheme.onSurface
         ),
-        // 2. EL TÍTULO CAMBIA SEGÚN EL ESTADO
+        // TÍTULO CAMBIA SEGÚN EL ESTADO
         title = {
-            // Si la búsqueda no está activa, muestra el título normal de la app
             if (!isSearchActive) {
-                Text("RestaurApp") // O el título que prefieras
+                Text("RestaurApp")
             }
         },
-        // 3. LAS ACCIONES CONTIENEN LA LÓGICA DE BÚSQUEDA
+        // LAS ACCIONES CONTIENEN LA LÓGICA DE BÚSQUEDA
         actions = {
             if (isSearchActive) {
-                // --- MODO BÚSQUEDA ACTIVA ---
-                // Usamos AnimatedVisibility para una transición suave
                 AnimatedVisibility(
-                    visible = true, // Siempre visible en este modo
+                    visible = true,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
@@ -61,11 +58,10 @@ fun HomeTopBar(
                         onValueChange = onQueryChange,
                         modifier = Modifier.fillMaxWidth(0.9f),
                         placeholder = { Text("Buscar en el diccionario...") },
-                        // Cambiamos el icono a una flecha para cerrar
                         leadingIcon = {
                             IconButton(onClick = {
                                 isSearchActive = false
-                                onQueryChange("") // Limpia la búsqueda al cerrar
+                                onQueryChange("")
                             }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -84,7 +80,6 @@ fun HomeTopBar(
                     )
                 }
             } else {
-                // --- MODO NORMAL (SOLO ÍCONO) ---
                 IconButton(onClick = { isSearchActive = true }) {
                     Icon(
                         imageVector = Icons.Default.Search,

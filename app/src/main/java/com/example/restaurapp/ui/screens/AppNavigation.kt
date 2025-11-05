@@ -100,7 +100,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 onGuestAccess = {
                     scope.launch {
                         isGuestLoading = true
-                        delay(2000) // Reducido para mejor UX
+                        delay(2000)
                         isGuestLoading = false
                         navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }

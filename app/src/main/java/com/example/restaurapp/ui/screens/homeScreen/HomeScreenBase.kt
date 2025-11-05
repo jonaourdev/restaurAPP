@@ -52,7 +52,7 @@ fun HomeScreenBase(
             .fillMaxSize()
             .padding(mainPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp) // Usamos Arrangement para un espaciado consistente
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
             value = "",
