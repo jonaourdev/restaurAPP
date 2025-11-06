@@ -6,7 +6,7 @@ import com.example.restaurapp.model.local.concepts.FamilyDao
 import com.example.restaurapp.model.local.concepts.FamilyEntity
 import kotlinx.coroutines.flow.Flow
 
-class ConceptRepository(
+open class ConceptRepository(
     private val conceptDao: ConceptDao,
     private val familyDao: FamilyDao
 ) {

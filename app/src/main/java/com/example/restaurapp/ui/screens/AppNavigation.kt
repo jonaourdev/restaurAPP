@@ -5,6 +5,7 @@ import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,6 +40,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.ui.screens.addConceptScreen.AddConceptScreen
+import com.example.restaurapp.ui.screens.addFamilyScreeen.AddFamilyScreen
+import com.example.restaurapp.ui.screens.familyDetailScreen.FamilyDetailScreen
 
 @Composable
 fun AppNavigation(windowSizeClass: WindowSizeClass) {
@@ -200,17 +203,30 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             arguments = listOf(navArgument("familyId") { type = NavType.LongType })
         ) { backStackEntry ->
             val familyId = backStackEntry.arguments?.getLong("familyId") ?: 0
-            // Aquí iría el Composable FamilyDetailScreen(familyId = familyId, ...)
-            // Esta pantalla mostraría los conceptos filtrados por familyId
-            // y tendría un FAB para navegar a AddConceptScreen con ese familyId.
+            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory)
+
+            FamilyDetailScreen(
+                familyId = familyId,
+                vm = conceptViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToAddConcept = { fId ->
+                    // Navegamos a AddConceptScreen pasando el TIPO y el ID de la familia
+                    navController.navigate(
+                        Screen.AddConcept.route + "?tipo=${ConceptType.TECNICO}&familyId=$fId"
+                    )
+                }
+            )
         }
 
         // --- Add Family Screen ---
         composable(
             route = Screen.AddFamily.route
         ) {
-            // Aquí iría el Composable AddFamilyScreen(...)
-            // que contendría un formulario para llamar a vm.addFamily()
+            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
+            AddFamilyScreen(
+                vm = conceptViewModel,
+                onNavigateBack = {navController.popBackStack()}
+            )
         }
 
 
@@ -220,23 +236,34 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             route = Screen.AddConcept.route + "?tipo={tipo}&familyId={familyId}",
             arguments = listOf(
                 navArgument("tipo"){
-                type = NavType.StringType
-                defaultValue = ConceptType.FORMATIVO
-            },
+                    type = NavType.StringType
+                    defaultValue = ConceptType.FORMATIVO},
                 navArgument("familyId"){
-                type = NavType.LongType
-                defaultValue = -1L
+                    type = NavType.LongType
+                    defaultValue = -1L
             })
         ) { backStackEntry ->
-            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
+            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory)
             val tipo = backStackEntry.arguments?.getString("tipo") ?: ConceptType.FORMATIVO
+            val familyId = backStackEntry.arguments?.getLong("familyId") ?: -1L
 
             LaunchedEffect(key1 = tipo, key2 = familyId) {
                 conceptViewModel.onConceptTypeChange(tipo)
-                // El ViewModel ahora necesita saber el familyId para asignarlo al crear
+
+                if (familyId != -1L) {
+                    conceptViewModel.setCurrentFamilyId(familyId)
+                } else {
+                    conceptViewModel.setCurrentFamilyId(null)
+                }
             }
 
-            // Y el `addConcept` del ViewModel deberá ser modificado para usar este familyId
+            DisposableEffect(Unit) {
+                onDispose {
+                    conceptViewModel.setCurrentFamilyId(null)
+                }
+            }
+
+
             AddConceptScreen(
                 vm = conceptViewModel,
                 onNavigateBack = {navController.popBackStack()}

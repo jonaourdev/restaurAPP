@@ -22,6 +22,7 @@ data class ConceptUiState(
     val families: List<FamilyEntity> = emptyList(),
     val familyName: String = "",
     val familyDescription: String = "",
+    val currentFamilyId: Long? = null,
 
 
     // Campo para la funcionalidad de búsqueda
@@ -98,7 +99,8 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
             val newConcept = ConceptEntity(
                 nombreConcepto = state.nombreConcepto.trim(),
                 descripcion = state.descripcion.trim(),
-                tipo = state.tipoSeleccionado
+                tipo = state.tipoSeleccionado,
+                familyId = state.currentFamilyId
             )
             conceptRepository.insert(newConcept)
             _uiState.update {
@@ -157,6 +159,10 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         val newFamily = FamilyEntity(name = state.familyName, description = state.familyDescription)
         conceptRepository.insertFamily(newFamily)
         _uiState.update { it.copy(familyName = "", familyDescription = "") }
+    }
+
+    fun setCurrentFamilyId(id: Long?) {
+        _uiState.update { it.copy(currentFamilyId = id) }
     }
 
 
