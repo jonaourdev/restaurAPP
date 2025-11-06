@@ -6,12 +6,14 @@ sealed class Screen(val route: String) {
     data object Home : Screen("home")
     data object Profile : Screen("profile")
     data object Favorites : Screen("favorites")
+    data object Families : Screen("families")
     data object EditProfile : Screen("edit_profile")
 
-    data object TechnicalConcept : Screen("technical_concept")
-    data object FormativeConcept : Screen("formative_concept")
+    data object DetailFamily : Screen("family_detail_screen")
 
     data object AddConcept : Screen("add_content")
+    data object AddFamily : Screen("add_family_screen")
+
     object ListConcept : Screen("list_concept")
 
     data class FormativeDetail(val conceptId: String) : Screen("formative_detail/$conceptId") {

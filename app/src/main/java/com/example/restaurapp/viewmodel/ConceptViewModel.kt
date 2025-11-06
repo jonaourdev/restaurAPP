@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.restaurapp.model.local.concepts.ConceptEntity
 import com.example.restaurapp.model.local.concepts.ConceptType
+import com.example.restaurapp.model.local.concepts.FamilyEntity
 import com.example.restaurapp.model.repository.ConceptRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +17,13 @@ data class ConceptUiState(
     val nombreConcepto: String = "",
     val descripcion: String = "",
     val tipoSeleccionado: String = ConceptType.FORMATIVO,
+
+    //Campos para familias
+    val families: List<FamilyEntity> = emptyList(),
+    val familyName: String = "",
+    val familyDescription: String = "",
+    val currentFamilyId: Long? = null,
+
 
     // Campo para la funcionalidad de búsqueda
     val searchQuery: String = "",
@@ -39,6 +47,7 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
 
     init {
         fetchAllConcepts()
+        fetchAllFamilies()
     }
 
     fun onConceptNameChange(name: String) {
@@ -59,7 +68,7 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     }
 
 
-    // --- OPERACIONES CRUD (Crear, Leer, Actualizar, Borrar) ---
+    // --- OPERACIONES CRUD CONCEPTOS (Crear, Leer, Actualizar, Borrar) ---
     private fun fetchAllConcepts() = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true, error = null) }
         try {
@@ -90,7 +99,8 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
             val newConcept = ConceptEntity(
                 nombreConcepto = state.nombreConcepto.trim(),
                 descripcion = state.descripcion.trim(),
-                tipo = state.tipoSeleccionado
+                tipo = state.tipoSeleccionado,
+                familyId = state.currentFamilyId
             )
             conceptRepository.insert(newConcept)
             _uiState.update {
@@ -114,6 +124,48 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     fun clearMessages() {
         _uiState.update { it.copy(error = null, successMessage = null) }
     }
+
+    // --- OPERACIONES CRUD FAMILIAS (Crear, Leer, Actualizar, Borrar) ---
+
+    //Obtener todas las familias
+    private fun fetchAllFamilies() = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true) }
+        try {
+            conceptRepository.getAllFamilies().collect { familyList ->
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        families = familyList
+                    ) }
+        }
+    } catch (e: Exception){
+        _uiState.update { it.copy(isLoading = false, error = "Error al cargar las familias: ${e.message}") }}
+    }
+
+    fun onFamilyNameChange(name: String) {
+        _uiState.update { it.copy(familyName = name, error = null) }
+    }
+
+    fun onFamilyDescriptionChange(description: String) {
+        _uiState.update { it.copy(familyDescription = description, error = null) }
+    }
+
+    fun addFamily() = viewModelScope.launch {
+        val state = _uiState.value
+        if (state.familyName.isBlank()){
+            _uiState.update { it.copy(error = "El nombre de la familia no puede estar vacío.") }
+            return@launch
+        }
+        val newFamily = FamilyEntity(name = state.familyName, description = state.familyDescription)
+        conceptRepository.insertFamily(newFamily)
+        _uiState.update { it.copy(familyName = "", familyDescription = "") }
+    }
+
+    fun setCurrentFamilyId(id: Long?) {
+        _uiState.update { it.copy(currentFamilyId = id) }
+    }
+
+
 }
 
 
