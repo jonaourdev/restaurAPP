@@ -1,11 +1,13 @@
 package com.example.restaurapp.ui.screens.familyDetailScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -27,15 +29,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.restaurapp.ui.screens.listConceptScreen.ConceptListItem
 import com.example.restaurapp.viewmodel.ConceptViewModel
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
+import com.example.restaurapp.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FamilyDetailScreen(
+fun FamilyDetailScreenBase(
+    authVm: AuthViewModel,
+    modifier: Modifier = Modifier,
     familyId: Long,
     vm: ConceptViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToAddConcept: (Long) -> Unit
+    onNavigateToAddConcept: (Long) -> Unit,
+    contentPadding: PaddingValues,
+    gridCells: GridCells,
+    itemSpacing: Dp
 ){
     val uiState by vm.uiState.collectAsState()
 
@@ -45,8 +55,13 @@ fun FamilyDetailScreen(
     //Filtrar conceptos que pertenecen a la familia
     val conceptInFamily = uiState.concepts.filter { it.familyId == familyId }
 
+    val authState by authVm.uiState.collectAsState() // <-- 2. Obtén el estado de autenticación
+    val isGuest = authState.currentUser == null     // <-- 3. Define si es invitado
+    val context = LocalContext.current
+
 
     Scaffold(
+        modifier = Modifier,
         topBar = {
             TopAppBar(
                 title = { Text(family?.name ?: "Detalle de Familia") },
@@ -57,7 +72,18 @@ fun FamilyDetailScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {onNavigateToAddConcept(familyId)}) {
+            FloatingActionButton(
+                onClick = {
+                    if (isGuest) {
+                        Toast.makeText(
+                            context,
+                            "Los invitados no pueden añadir. Por favor, regístrese.", Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        onNavigateToAddConcept(familyId)
+                    }
+                }
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Añadir Concepto a esta familia")
             }
         }
@@ -85,10 +111,12 @@ fun FamilyDetailScreen(
                 }
 
                 else -> {
-                    LazyColumn(
+                    LazyVerticalGrid(
+                        columns = gridCells,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        contentPadding = contentPadding,
+                        verticalArrangement = Arrangement.spacedBy(itemSpacing),
+                        horizontalArrangement = Arrangement.spacedBy(itemSpacing)
                     ) {
                         items(conceptInFamily) { concept ->
                             ConceptListItem(concept = concept)

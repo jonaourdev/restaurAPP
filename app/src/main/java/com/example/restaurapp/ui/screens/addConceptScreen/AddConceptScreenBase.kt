@@ -11,29 +11,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.restaurapp.model.local.concepts.ConceptEntity
-import com.example.restaurapp.model.repository.ConceptRepository
 import com.example.restaurapp.viewmodel.ConceptUiState
 import com.example.restaurapp.viewmodel.ConceptViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddConceptScreen(
+fun AddConceptScreenBase(
+    modifier: Modifier = Modifier,
     vm: ConceptViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    formWidth: Float
 ) {
     val uiState by vm.uiState.collectAsState()
 
     LaunchedEffect(uiState.successMessage, uiState.error) {
         if (uiState.successMessage != null || uiState.error != null) {
+            onNavigateBack()
             vm.clearMessages()
         }
     }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = { val tipo = uiState.tipoSeleccionado.lowercase()
@@ -47,43 +48,40 @@ fun AddConceptScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(16.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentAlignment = Alignment.TopCenter
         ) {
-            ConceptForm(
-                uiState = uiState,
-                onNameChange = vm::onConceptNameChange,
-                onDescriptionChange = vm::onDescriptionChange,
-                onSaveClick = vm::addConcept
-            )
-
-            if (uiState.isLoading) {
-                Spacer(Modifier.height(16.dp))
-                CircularProgressIndicator()
-                Text("Guardando concepto...")
-            }
-
-            uiState.error?.let { errorMsg ->
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = errorMsg,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(formWidth)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ConceptForm(
+                    uiState = uiState,
+                    onNameChange = vm::onConceptNameChange,
+                    onDescriptionChange = vm::onDescriptionChange,
+                    onSaveClick = vm::addConcept
                 )
-            }
 
-            uiState.successMessage?.let { successMsg ->
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = successMsg,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center
-                )
+                if (uiState.isLoading) {
+                    Spacer(Modifier.height(16.dp))
+                    CircularProgressIndicator()
+                    Text("Guardando concepto...")
+                }
+
+                uiState.error?.let { errorMsg ->
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = errorMsg,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }

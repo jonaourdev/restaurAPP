@@ -42,8 +42,6 @@ fun HomeScreenBase(
     modifier: Modifier = Modifier,
     mainPadding: Dp,
     titleStyle: TextStyle,
-    spaceAfterSearch: Dp,
-    spaceAfterTitle: Dp,
     onGoToListaFormativos: () -> Unit,
     onGoToListaTecnicos: () -> Unit
 ){
@@ -73,19 +71,18 @@ fun HomeScreenBase(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // IMPORTANTE: Esto asume que tu Composable ConceptCard tiene un parámetro onClick
             ConceptCard(
                 text = "CONCEPTOS FORMATIVOS",
                 iconRes = R.drawable.laurel,
                 color = DuocYellow,
-                onClick = onGoToListaFormativos, // Notifica el evento de clic
+                onClick = onGoToListaFormativos,
                 modifier = Modifier.weight(1f)
             )
             ConceptCard(
                 text = "CONCEPTOS TÉCNICOS",
                 iconRes = R.drawable.capitel,
                 color = DuocBlue,
-                onClick = onGoToListaTecnicos, // Notifica el evento de clic
+                onClick = onGoToListaTecnicos,
                 modifier = Modifier.weight(1f)
             )
         }

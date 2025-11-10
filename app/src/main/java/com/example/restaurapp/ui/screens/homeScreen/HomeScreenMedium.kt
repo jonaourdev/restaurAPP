@@ -17,8 +17,6 @@ fun HomeScreenMedium(
     HomeScreenBase(
         mainPadding = 32.dp,
         titleStyle = MaterialTheme.typography.headlineLarge,
-        spaceAfterSearch = 24.dp,
-        spaceAfterTitle = 24.dp,
         onGoToListaFormativos = onGoToListaFormativos,
         onGoToListaTecnicos = onGoToListaTecnicos
     )

@@ -179,6 +179,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             val tipo = backStackEntry.arguments?.getString("tipo") ?: ConceptType.FORMATIVO
 
             ListConceptScreen(
+                windowSizeClass = windowSizeClass,
                 vm = conceptViewModel,
                 tipoConcepto = tipo,
                 authVm = authVm,
@@ -206,8 +207,10 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory)
 
             FamilyDetailScreen(
+                windowSizeClass = windowSizeClass,
                 familyId = familyId,
                 vm = conceptViewModel,
+                authVm = authVm,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToAddConcept = { fId ->
                     // Navegamos a AddConceptScreen pasando el TIPO y el ID de la familia
@@ -224,6 +227,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         ) {
             val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
             AddFamilyScreen(
+                windowSizeClass = windowSizeClass,
                 vm = conceptViewModel,
                 onNavigateBack = {navController.popBackStack()}
             )
@@ -265,6 +269,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
 
 
             AddConceptScreen(
+                windowSizeClass = windowSizeClass,
                 vm = conceptViewModel,
                 onNavigateBack = {navController.popBackStack()}
             )
