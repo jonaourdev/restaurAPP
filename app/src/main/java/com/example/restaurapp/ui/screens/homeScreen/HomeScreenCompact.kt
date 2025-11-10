@@ -15,8 +15,6 @@ fun HomeScreenCompact(
     HomeScreenBase(
         mainPadding = 16.dp,
         titleStyle = MaterialTheme.typography.titleLarge,
-        spaceAfterSearch = 32.dp,
-        spaceAfterTitle = 16.dp,
         onGoToListaFormativos = onGoToListaFormativos,
         onGoToListaTecnicos = onGoToListaTecnicos
     )

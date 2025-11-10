@@ -1,6 +1,7 @@
 package com.example.restaurapp.ui.screens.addFamilyScreeen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,19 +36,23 @@ import com.example.restaurapp.viewmodel.ConceptUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddFamilyScreen(
+fun AddFamilyScreenBase(
+    modifier: Modifier = Modifier,
     vm: ConceptViewModel,
     onNavigateBack: () -> Unit,
+    formWidth: Float
 ){
     val uiState by vm.uiState.collectAsState()
 
     LaunchedEffect(uiState.successMessage, uiState.error) {
         if (uiState.successMessage != null || uiState.error != null) {
+            onNavigateBack()
             vm.clearMessages()
         }
     }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = { Text("Añadir Familia") },
@@ -59,33 +64,40 @@ fun AddFamilyScreen(
             )
         }
     ){ paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentAlignment = Alignment.TopCenter
         ) {
-            FamilyForm(
-                uiState = uiState,
-                onNameChange = vm::onFamilyNameChange,
-                onDescriptionChange = vm::onDescriptionChange,
-                onSaveClick = vm::addFamily
-            )
-
-            if (uiState.isLoading) {
-                Spacer(Modifier.height(16.dp))
-                CircularProgressIndicator()
-                Text("Guardando familia...")
-            }
-
-            uiState.error?.let { errorMsg ->
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = errorMsg,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(formWidth)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                FamilyForm(
+                    uiState = uiState,
+                    onNameChange = vm::onFamilyNameChange,
+                    onDescriptionChange = vm::onDescriptionChange,
+                    onSaveClick = vm::addFamily
                 )
+
+                if (uiState.isLoading) {
+                    Spacer(Modifier.height(16.dp))
+                    CircularProgressIndicator()
+                    Text("Guardando familia...")
+                }
+
+                uiState.error?.let { errorMsg ->
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = errorMsg,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }
