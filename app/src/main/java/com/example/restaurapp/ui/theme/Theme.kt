@@ -22,7 +22,21 @@ private val LightColorScheme = lightColorScheme(
     primary = DuocBlue,
     onPrimary = Color.White,
     secondary = Black90,
-    tertiary = Cream60
+    tertiary = Cream60,
+
+    //Background
+    background = Background,
+
+    //Texto
+    onBackground = Color.White,
+
+
+    //NavBar
+    surface = NavBarMain,
+    onSurface = NavBarSelected,
+    surfaceVariant = NavBarUnselected,
+    onSurfaceVariant = Color.White,
+
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
