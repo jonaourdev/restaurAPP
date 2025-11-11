@@ -169,7 +169,7 @@ fun LoginScreenBase(
 
         if (isLoading) {
             val message = when {
-                uiState.isLoading -> "¡Login exitoso!"
+                uiState.isLoading -> "Ingresando..."
                 isGuestLoading -> "Ingresando como invitado..."
                 else -> ""
             }
