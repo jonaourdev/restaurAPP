@@ -43,6 +43,7 @@ android {
 dependencies {
 
     implementation(libs.androidx.compose.animation.core.lint)
+    implementation(libs.volley)
     val roomVersion = "2.6.1"
     val lifecycleVersion = "2.8.6"
     val activityCompose = "1.9.3"
