@@ -20,14 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
-import com.android.volley.toolbox.ImageRequest
+import coil.compose.AsyncImage
 import com.example.restaurapp.R
 import com.example.restaurapp.viewmodel.AuthViewModel
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,17 +92,13 @@ fun EditProfileScreenBase(
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .clickable { imagePickerLauncher.launch("image/*") }
                 ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            ImageRequest.Builder(context)
-                                .data(uiState.editProfileImageUri ?: uiState.currentUser?.photoUrl)
-                                .error(R.drawable.ic_default_avatar)
-                                .crossfade(true)
-                                .build()
-                        ),
+                    AsyncImage(
+                        model = uiState.editProfileImageUri ?: uiState.currentUser?.photoUrl,
                         contentDescription = "Imagen de perfil",
+                        modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                        placeholder = painterResource(id = R.drawable.ic_default_avatar),
+                        error = painterResource(id = R.drawable.ic_default_avatar)
                     )
                     Box(
                         modifier = Modifier
@@ -137,7 +133,7 @@ fun EditProfileScreenBase(
 
                 //Botón para guardar
                 Button(
-                    onClick = { vm::actualizarPerfil },
+                    onClick = { vm.actualizarPerfil() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),

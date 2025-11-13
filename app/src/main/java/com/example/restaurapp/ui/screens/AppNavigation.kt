@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.ui.screens.addConceptScreen.AddConceptScreen
 import com.example.restaurapp.ui.screens.addFamilyScreeen.AddFamilyScreen
+import com.example.restaurapp.ui.screens.editProfileScreen.EditProfileScreen
 import com.example.restaurapp.ui.screens.familyDetailScreen.FamilyDetailScreen
 
 @Composable
@@ -278,15 +279,16 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
 
 
 
-        // --- Edit Profile Screen ---
-//        composable(route = Screen.EditProfile.route) {
-//            EditProfileScreen(
-//                vm = authVm,
-//                onProfileUpdate = {
-//                    navController.popBackStack()
-//                }
-//            )
-//        }
+         //--- Edit Profile Screen ---
+        composable(route = Screen.EditProfile.route) {
+            EditProfileScreen(
+                windowSizeClass = windowSizeClass,
+                vm = authVm,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
