@@ -121,9 +121,23 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     }
 
     //Seleccionar Concepto por ID para desplegar el detalle
-    fun selectConceptById(conceptId: Long) {
-        val concept = _uiState.value.concepts.find { it.id.toLong() == conceptId }
-        _uiState.update { it.copy(selectedConcept = concept) }
+    fun selectConceptById(conceptId: Long) = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true) }
+        try {
+            conceptRepository.getAllConcepts().collect { latestConcepts ->
+                val concept = latestConcepts.find { it.id == conceptId }
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        concepts = latestConcepts,
+                        selectedConcept = concept
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            _uiState.update { it.copy(isLoading = false, error = "No se pudo cargar el concepto: ${e.message}") }
+        }
     }
 
 

@@ -80,7 +80,7 @@ fun AddFamilyScreenBase(
                 FamilyForm(
                     uiState = uiState,
                     onNameChange = vm::onFamilyNameChange,
-                    onDescriptionChange = vm::onDescriptionChange,
+                    onDescriptionChange = vm::onFamilyDescriptionChange,
                     onSaveClick = vm::addFamily
                 )
 

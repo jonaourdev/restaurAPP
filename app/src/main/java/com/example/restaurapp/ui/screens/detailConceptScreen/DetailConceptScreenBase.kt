@@ -62,7 +62,7 @@ fun DetailConceptScreenBase(
             )
         }
     ) { paddingValues ->
-        if (selectedConcept == null || selectedConcept.id.toLong() != conceptId) {
+        if (selectedConcept == null || selectedConcept.id != conceptId) {
             Box(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 contentAlignment = Alignment.Center
