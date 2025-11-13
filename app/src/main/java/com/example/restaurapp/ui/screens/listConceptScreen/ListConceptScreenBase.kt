@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -18,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -109,7 +113,7 @@ fun ListConceptScreenBase(
                             if (uiState.families.isEmpty()) {
                                 item {
                                     Text(
-                                        text = "Aún no hay familias de conceptos técnicos.\n¡Presiona '+' para crear la primera!",
+                                        text = "Aún no hay familias de conceptos técnicos. ¡Presiona '+' para crear la primera!",
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier.padding(16.dp)
                                     )
@@ -123,24 +127,51 @@ fun ListConceptScreenBase(
                                         family = family,
                                         onClick = { onNavigateToFamily(family.id) }
                                     )
-                                }
+                                 }
                             }
                         } else {
                             val conceptosFiltrados = uiState.concepts.filter { it.tipo == tipoConcepto }
+                            val (favoriteConcepts, otherConcepts) = conceptosFiltrados.partition { it.isFavorite }
+
                             if (conceptosFiltrados.isEmpty()) {
                                 item {
                                     Text(
-                                        text = "Aún no hay conceptos formativos.\n¡Presiona '+' para añadir el primero!",
+                                        text = "Aún no hay conceptos formativos. ¡Presiona '+' para añadir el primero!",
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier.padding(16.dp)
                                     )
                                 }
                             } else {
-                                items(
-                                    items = conceptosFiltrados,
-                                    key = { concept -> concept.id } // <-- Sintaxis correcta
-                                ) { concept ->
-                                    ConceptListItem(concept = concept)
+                                if (favoriteConcepts.isNotEmpty()) {
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                        Text(
+                                            text = "Favoritos",
+                                            style = MaterialTheme.typography.titleLarge,
+                                            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+                                        )
+                                    }
+                                    items(favoriteConcepts) { concept ->
+                                        ConceptListItem(
+                                            concept = concept,
+                                            onFavoriteClick = { vm.toggleFavorite(concept) }
+                                        )
+                                    }
+                                }
+
+                                if (otherConcepts.isNotEmpty()) {
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                        Text(
+                                            text = if (favoriteConcepts.isNotEmpty()) "Otros Conceptos" else "Conceptos",
+                                            style = MaterialTheme.typography.titleLarge,
+                                            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+                                        )
+                                    }
+                                    items(otherConcepts) { concept ->
+                                        ConceptListItem(
+                                            concept = concept,
+                                            onFavoriteClick = { vm.toggleFavorite(concept) }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -153,23 +184,35 @@ fun ListConceptScreenBase(
 
 
 @Composable
-fun ConceptListItem(concept: ConceptEntity) {
+fun ConceptListItem(concept: ConceptEntity, onFavoriteClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = concept.nombreConcepto,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = concept.descripcion,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = concept.nombreConcepto,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = concept.descripcion,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            IconButton(onClick = onFavoriteClick) {
+                Icon(
+                    imageVector = if (concept.isFavorite) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                    contentDescription = "Favorite",
+                    tint = if (concept.isFavorite) Color.Yellow else Color.Gray
+                )
+            }
         }
     }
 }
@@ -199,6 +242,3 @@ fun FamilyListItem(family: FamilyEntity, onClick: () -> Unit) {
         }
     }
 }
-
-
-
