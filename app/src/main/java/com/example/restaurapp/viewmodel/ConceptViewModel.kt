@@ -116,6 +116,15 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         }
     }
 
+    fun toggleFavorite(concept: ConceptEntity) = viewModelScope.launch {
+        val updatedConcept = concept.copy(isFavorite = !concept.isFavorite)
+        try {
+            conceptRepository.update(updatedConcept)
+        } catch (e: Exception) {
+            _uiState.update { it.copy(error = "Error al actualizar el favorito: ${e.message}") }
+        }
+    }
+
     fun selectConcept(concept: ConceptEntity) {
         _uiState.update { it.copy(selectedConcept = concept) }
     }
@@ -187,5 +196,3 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
 
 
 }
-
-
