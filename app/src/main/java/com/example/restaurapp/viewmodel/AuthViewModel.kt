@@ -1,5 +1,6 @@
 package com.example.restaurapp.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.restaurapp.model.local.user.UserEntity
@@ -26,6 +27,7 @@ data class AuthUiState(
     // --- CAMPOS PARA EDICIÓN DE PERFIL ---
     val editNombreCompleto: String = "",
     val editCorreo: String = "",
+    val editProfileImageUri: Uri? = null,
     val updateSuccess: Boolean = false,
 
     // Estado global compartido
@@ -108,13 +110,16 @@ class AuthViewModel(
 
     fun onEditNombreChange(v: String) = _uiState.update { it.copy(editNombreCompleto = v, error = null) }
     fun onEditCorreoChange(v: String) = _uiState.update { it.copy(editCorreo = v, error = null) }
-
+    fun onProfileImageChange(uri: Uri){
+        _uiState.update { it.copy(editProfileImageUri = uri) }
+    }
     fun cargarDatosParaEdicion() {
         _uiState.value.currentUser?.let { user ->
             _uiState.update {
                 it.copy(
                     editNombreCompleto = user.nombreCompleto,
-                    editCorreo = user.correo
+                    editCorreo = user.correo,
+                    editProfileImageUri = null
                 )
             }
         }
@@ -123,6 +128,7 @@ class AuthViewModel(
     fun actualizarPerfil() = viewModelScope.launch {
         val state = _uiState.value
         val currentUser = state.currentUser
+        val photoUrlString = state.editProfileImageUri?.toString() ?: currentUser?.photoUrl
 
         if (currentUser == null) {
             _uiState.update { it.copy(error = "No se puede actualizar. No hay un usuario logeado.") }
@@ -140,7 +146,8 @@ class AuthViewModel(
         try {
             val updatedUser = currentUser.copy(
                 nombreCompleto = state.editNombreCompleto,
-                correo = state.editCorreo
+                correo = state.editCorreo,
+                photoUrl = photoUrlString
             )
 
             userRepo.updateUser(updatedUser)
