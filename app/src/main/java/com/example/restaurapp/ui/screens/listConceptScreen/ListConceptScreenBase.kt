@@ -3,11 +3,9 @@ package com.example.restaurapp.ui.screens.listConceptScreen
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -18,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +39,7 @@ fun ListConceptScreenBase(
     onNavigateBack: () -> Unit,
     onNavigateToAddConcept: () -> Unit,
     onNavigateToFamily: (Long) -> Unit,
+    onNavigateToConceptDetail: (conceptId: Long) -> Unit,
     tipoConcepto: String,
     authVm: AuthViewModel,
     contentPadding: PaddingValues,
@@ -121,7 +119,7 @@ fun ListConceptScreenBase(
                             } else {
                                 items(
                                     items = uiState.families,
-                                    key = { family -> family.id } // <-- Sintaxis correcta para la clave
+                                    key = { family -> family.id }
                                 ) { family ->
                                     FamilyListItem(
                                         family = family,
@@ -184,10 +182,11 @@ fun ListConceptScreenBase(
 
 
 @Composable
-fun ConceptListItem(concept: ConceptEntity, onFavoriteClick: () -> Unit) {
+fun ConceptListItem(concept: ConceptEntity, onFavoriteClick: () -> Unit, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier.padding(16.dp),

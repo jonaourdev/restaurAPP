@@ -16,7 +16,8 @@ fun ListConceptScreenMedium(
     authVm: AuthViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToAddConcept: () -> Unit,
-    onNavigateToFamily: (Long) -> Unit
+    onNavigateToFamily: (Long) -> Unit,
+    onNavigateToConceptDetail: (conceptId: Long) -> Unit
 ) {
     ListConceptScreenBase(
         modifier = modifier,
@@ -28,6 +29,7 @@ fun ListConceptScreenMedium(
         onNavigateToFamily = onNavigateToFamily,
         contentPadding = PaddingValues(24.dp),
         gridCells = GridCells.Fixed(2),
-        itemSpacing = 16.dp
+        itemSpacing = 16.dp,
+        onNavigateToConceptDetail = onNavigateToConceptDetail,
     )
 }

@@ -16,7 +16,8 @@ fun ListConceptScreenExpanded(
     authVm: AuthViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToAddConcept: () -> Unit,
-    onNavigateToFamily: (Long) -> Unit
+    onNavigateToFamily: (Long) -> Unit,
+    onNavigateToConceptDetail: (conceptId: Long) -> Unit
 ) {
     ListConceptScreenBase(
         modifier = modifier,
@@ -28,6 +29,7 @@ fun ListConceptScreenExpanded(
         onNavigateToFamily = onNavigateToFamily,
         contentPadding = PaddingValues(32.dp),
         gridCells = GridCells.Adaptive(minSize = 250.dp),
-        itemSpacing = 20.dp
+        itemSpacing = 20.dp,
+        onNavigateToConceptDetail = onNavigateToConceptDetail,
     )
 }

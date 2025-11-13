@@ -15,7 +15,8 @@ fun FamilyDetailScreenCompact(
     vm: ConceptViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToAddConcept: (Long) -> Unit,
-    authVm: AuthViewModel
+    authVm: AuthViewModel,
+    onNavigateToConceptDetail: (conceptId: Long) -> Unit,
 ) {
     FamilyDetailScreenBase(
         modifier = modifier,
@@ -26,6 +27,7 @@ fun FamilyDetailScreenCompact(
         contentPadding = PaddingValues(16.dp),
         gridCells = GridCells.Fixed(1),
         itemSpacing = 12.dp,
-        authVm = authVm
+        authVm = authVm,
+        onNavigateToConceptDetail = onNavigateToConceptDetail
     )
 }

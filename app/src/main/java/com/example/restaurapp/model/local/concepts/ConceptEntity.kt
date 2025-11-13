@@ -13,10 +13,12 @@ object ConceptType{
 @Entity(tableName = "conceptos")
 data class ConceptEntity (
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val id: Long = 0,
     val nombreConcepto: String,
     val descripcion: String,
     val tipo: String,
     val familyId: Long? = null,
     val isFavorite: Boolean = false
+    val imageUrl: String? = null
 )
+
