@@ -14,8 +14,9 @@ fun FamilyDetailScreenExpanded(
     familyId: Long,
     vm: ConceptViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToAddConcept: (Long) -> Unit,
+    onNavigateToAddConcept: (conceptId: Long) -> Unit,
     authVm: AuthViewModel,
+    onNavigateToConceptDetail: (conceptId: Long) -> Unit,
 ) {
     FamilyDetailScreenBase(
         modifier = modifier,
@@ -26,6 +27,7 @@ fun FamilyDetailScreenExpanded(
         contentPadding = PaddingValues(32.dp),
         gridCells = GridCells.Adaptive(minSize = 250.dp),
         itemSpacing = 20.dp,
-        authVm = authVm
+        authVm = authVm,
+        onNavigateToConceptDetail = onNavigateToConceptDetail
     )
 }

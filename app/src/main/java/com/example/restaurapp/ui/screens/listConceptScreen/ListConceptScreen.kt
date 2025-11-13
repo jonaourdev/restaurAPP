@@ -16,7 +16,8 @@ fun ListConceptScreen(
     authVm: AuthViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToAddConcept: () -> Unit,
-    onNavigateToFamily: (Long) -> Unit
+    onNavigateToFamily: (Long) -> Unit,
+    onNavigateToConceptDetail: (conceptId: Long) -> Unit
 ) {
     when (windowSizeClass.widthSizeClass) {
         WindowWidthSizeClass.Compact -> {
@@ -27,7 +28,8 @@ fun ListConceptScreen(
                 authVm = authVm,
                 onNavigateBack = onNavigateBack,
                 onNavigateToAddConcept = onNavigateToAddConcept,
-                onNavigateToFamily = onNavigateToFamily
+                onNavigateToFamily = onNavigateToFamily,
+                onNavigateToConceptDetail = onNavigateToConceptDetail
             )
         }
         WindowWidthSizeClass.Medium -> {
@@ -38,7 +40,8 @@ fun ListConceptScreen(
                 authVm = authVm,
                 onNavigateBack = onNavigateBack,
                 onNavigateToAddConcept = onNavigateToAddConcept,
-                onNavigateToFamily = onNavigateToFamily
+                onNavigateToFamily = onNavigateToFamily,
+                onNavigateToConceptDetail = onNavigateToConceptDetail
             )
         }
         else -> { // Expanded
@@ -49,7 +52,8 @@ fun ListConceptScreen(
                 authVm = authVm,
                 onNavigateBack = onNavigateBack,
                 onNavigateToAddConcept = onNavigateToAddConcept,
-                onNavigateToFamily = onNavigateToFamily
+                onNavigateToFamily = onNavigateToFamily,
+                onNavigateToConceptDetail = onNavigateToConceptDetail
             )
         }
     }

@@ -120,6 +120,12 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         _uiState.update { it.copy(selectedConcept = concept) }
     }
 
+    //Seleccionar Concepto por ID para desplegar el detalle
+    fun selectConceptById(conceptId: Long) {
+        val concept = _uiState.value.concepts.find { it.id.toLong() == conceptId }
+        _uiState.update { it.copy(selectedConcept = concept) }
+    }
+
 
     fun clearMessages() {
         _uiState.update { it.copy(error = null, successMessage = null) }

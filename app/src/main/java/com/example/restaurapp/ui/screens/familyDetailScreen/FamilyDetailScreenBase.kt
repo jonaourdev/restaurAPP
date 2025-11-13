@@ -45,7 +45,8 @@ fun FamilyDetailScreenBase(
     onNavigateToAddConcept: (Long) -> Unit,
     contentPadding: PaddingValues,
     gridCells: GridCells,
-    itemSpacing: Dp
+    itemSpacing: Dp,
+    onNavigateToConceptDetail: (conceptId: Long) -> Unit,
 ){
     val uiState by vm.uiState.collectAsState()
 
@@ -119,7 +120,10 @@ fun FamilyDetailScreenBase(
                         horizontalArrangement = Arrangement.spacedBy(itemSpacing)
                     ) {
                         items(conceptInFamily) { concept ->
-                            ConceptListItem(concept = concept)
+                            ConceptListItem(
+                                concept = concept,
+                                onClick = { onNavigateToConceptDetail(concept.id.toLong()) }
+                            )
                         }
                     }
                 }

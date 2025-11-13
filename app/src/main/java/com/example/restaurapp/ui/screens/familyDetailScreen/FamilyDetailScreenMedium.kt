@@ -16,6 +16,7 @@ fun FamilyDetailScreenMedium(
     onNavigateBack: () -> Unit,
     onNavigateToAddConcept: (Long) -> Unit,
     authVm: AuthViewModel,
+    onNavigateToConceptDetail: (conceptId: Long) -> Unit
 ) {
     FamilyDetailScreenBase(
         modifier = modifier,
@@ -26,6 +27,7 @@ fun FamilyDetailScreenMedium(
         contentPadding = PaddingValues(24.dp),
         gridCells = GridCells.Fixed(2),
         itemSpacing = 16.dp,
-        authVm = authVm
+        authVm = authVm,
+        onNavigateToConceptDetail = onNavigateToConceptDetail,
     )
 }
