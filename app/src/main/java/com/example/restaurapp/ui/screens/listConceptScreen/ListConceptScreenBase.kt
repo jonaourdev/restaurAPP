@@ -115,7 +115,7 @@ fun ListConceptScreenBase(
                             } else {
                                 items(
                                     items = uiState.families,
-                                    key = { family -> family.id } // <-- Sintaxis correcta para la clave
+                                    key = { family -> family.id }
                                 ) { family ->
                                     FamilyListItem(
                                         family = family,
@@ -136,11 +136,11 @@ fun ListConceptScreenBase(
                             } else {
                                 items(
                                     items = conceptosFiltrados,
-                                    key = { concept -> concept.id } // <-- Sintaxis correcta
+                                    key = { concept -> concept.id }
                                 ) { concept ->
                                     ConceptListItem(
                                         concept = concept,
-                                        onClick = {onNavigateToConceptDetail(concept.id.toLong())}
+                                        onClick = {onNavigateToConceptDetail(concept.id)}
                                     )
                                 }
                             }
