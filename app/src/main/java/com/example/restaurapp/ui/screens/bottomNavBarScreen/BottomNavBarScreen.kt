@@ -43,25 +43,25 @@ fun BottomNavBarScreen(
         )
 
         // --- Favoritos --- FALTA INCORPORAR
-//        NavigationBarItem(
-//            selected = currentRoute == Screen.Favorites.route,
-//            onClick = {
-//                navController.navigate(Screen.Favorites.route) {
-//                    popUpTo(navController.graph.findStartDestination().id) {
-//                        saveState = true
-//                    }
-//                    launchSingleTop = true
-//                    restoreState = true
-//                }
-//            },
-//            icon = { Icon(Icons.Filled.Favorite, contentDescription = "Favoritos") },
-//            label = { Text("Favoritos") },
-//            colors = NavigationBarItemDefaults.colors(
-//                selectedIconColor = MaterialTheme.colorScheme.primary,
-//                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                indicatorColor = MaterialTheme.colorScheme.surfaceVariant
-//            )
-//        )
+        NavigationBarItem(
+            selected = currentRoute == Screen.Favorites.route,
+            onClick = {
+                navController.navigate(Screen.Favorites.route) {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            icon = { Icon(Icons.Filled.Favorite, contentDescription = "Favoritos") },
+            label = { Text("Favoritos") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.primary,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                indicatorColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        )
 
         // --- Perfil ---
         NavigationBarItem(

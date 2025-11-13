@@ -105,7 +105,7 @@ fun FamilyDetailScreenBase(
 
                 conceptInFamily.isEmpty() -> {
                     Text(
-                        text = "Esta familia aún no tienen conceptos.\nPresiona '+' para añadir el primero!",
+                        text = "Esta familia aún no tienen conceptos. Presiona '+' para añadir el primero!",
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
@@ -122,7 +122,8 @@ fun FamilyDetailScreenBase(
                         items(conceptInFamily) { concept ->
                             ConceptListItem(
                                 concept = concept,
-                                onClick = { onNavigateToConceptDetail(concept.id.toLong()) }
+                                onClick = { onNavigateToConceptDetail(concept.id.toLong()) },
+                                onFavoriteClick = { vm.toggleFavorite(concept)
                             )
                         }
                     }
