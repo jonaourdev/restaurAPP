@@ -123,7 +123,7 @@ fun FamilyDetailScreenBase(
                             ConceptListItem(
                                 concept = concept,
                                 onClick = { onNavigateToConceptDetail(concept.id.toLong()) },
-                                onFavoriteClick = { vm.toggleFavorite(concept)
+                                onFavoriteClick = { vm.toggleFavorite(concept)}
                             )
                         }
                     }

@@ -151,7 +151,8 @@ fun ListConceptScreenBase(
                                     items(favoriteConcepts) { concept ->
                                         ConceptListItem(
                                             concept = concept,
-                                            onFavoriteClick = { vm.toggleFavorite(concept) }
+                                            onFavoriteClick = { vm.toggleFavorite(concept) },
+                                            onClick = {onNavigateToConceptDetail(concept.id)}
                                         )
                                     }
                                 }
@@ -167,7 +168,8 @@ fun ListConceptScreenBase(
                                     items(otherConcepts) { concept ->
                                         ConceptListItem(
                                             concept = concept,
-                                            onFavoriteClick = { vm.toggleFavorite(concept) }
+                                            onFavoriteClick = { vm.toggleFavorite(concept) },
+                                            onClick = {onNavigateToConceptDetail(concept.id)}
                                         )
                                     }
                                 }
