@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.ui.screens.addConceptScreen.AddConceptScreen
 import com.example.restaurapp.ui.screens.addFamilyScreeen.AddFamilyScreen
+import com.example.restaurapp.ui.screens.detailConceptScreen.DetailConceptScreen
 import com.example.restaurapp.ui.screens.editProfileScreen.EditProfileScreen
 import com.example.restaurapp.ui.screens.familyDetailScreen.FamilyDetailScreen
 
@@ -195,6 +196,9 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
 
                 onNavigateToFamily = { familyId ->
                     navController.navigate(Screen.DetailFamily.route + "/$familyId")
+                },
+                onNavigateToConceptDetail = { conceptId: Long ->
+                    navController.navigate(Screen.DetailConcept.route + "/$conceptId")
                 }
             )
         }
@@ -218,6 +222,9 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                     navController.navigate(
                         Screen.AddConcept.route + "?tipo=${ConceptType.TECNICO}&familyId=$fId"
                     )
+                },
+                onNavigateToConceptDetail = { conceptId: Long->
+                    navController.navigate(Screen.DetailConcept.route + "/$conceptId")
                 }
             )
         }
@@ -277,8 +284,6 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         }
 
 
-
-
          //--- Edit Profile Screen ---
         composable(route = Screen.EditProfile.route) {
             EditProfileScreen(
@@ -289,6 +294,27 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 }
             )
         }
+
+
+        // --- Detail Concept Screen ---
+        composable(
+            route = Screen.DetailConcept.route + "/{conceptId}",
+            arguments = listOf(navArgument("conceptId") {type = NavType.LongType})
+            ) { backStackEntry ->
+            val conceptId = backStackEntry.arguments?.getLong("conceptId") ?: 0
+            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory)
+
+            DetailConceptScreen(
+                windowSizeClass = windowSizeClass,
+                conceptId = conceptId,
+                vm = conceptViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+
+        }
+
     }
 }
+
+
 

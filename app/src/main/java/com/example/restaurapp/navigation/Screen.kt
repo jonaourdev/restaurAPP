@@ -10,6 +10,7 @@ sealed class Screen(val route: String) {
     data object EditProfile : Screen("edit_profile")
 
     data object DetailFamily : Screen("family_detail_screen")
+    data object DetailConcept : Screen("detail_concept")
 
     data object AddConcept : Screen("add_content")
     data object AddFamily : Screen("add_family_screen")
