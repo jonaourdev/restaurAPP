@@ -5,12 +5,13 @@ import com.example.restaurapp.model.local.user.UserEntity
 
 class AuthRepository (private val dao: UserDao) {
 
-    suspend fun register(nombreCompleto: String, correo: String, contrasenna: String) {
+    suspend fun register(nombres: String,apellidos:String, correo: String, contrasenna: String) {
         if (dao.contarPorCorreo(correo.trim()) > 0) {
             throw Exception("El correo electrónico ya está en uso.")
         }
         val newUser = UserEntity(
-            nombreCompleto = nombreCompleto.trim(),
+            nombres = nombres.trim(),
+            apellidos = apellidos.trim(),
             correo = correo.trim(),
             contrasenna = contrasenna
         )

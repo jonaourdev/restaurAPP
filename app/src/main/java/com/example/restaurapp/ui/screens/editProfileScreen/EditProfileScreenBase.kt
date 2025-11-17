@@ -110,11 +110,23 @@ fun EditProfileScreenBase(
                     }
                 }
 
-                // FORMULARIO
+                // --- FORMULARIO  ---
+
+                // "Nombres"
                 OutlinedTextField(
-                    value = uiState.editNombreCompleto,
-                    onValueChange = vm::onEditNombreChange,
-                    label = { Text("Nombre Completo") },
+                    value = uiState.editNombres,
+                    onValueChange = vm::onEditNombresChange,
+                    label = { Text("Nombres") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    enabled = !uiState.isLoading
+                )
+
+                // "Apellidos"
+                OutlinedTextField(
+                    value = uiState.editApellidos,
+                    onValueChange = vm::onEditApellidosChange,
+                    label = { Text("Apellidos") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     enabled = !uiState.isLoading

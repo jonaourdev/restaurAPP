@@ -12,7 +12,7 @@ class UserRepository(private val dao: UserDao) {
 
     suspend fun updateUser(user: UserEntity) {
         val trimmedUser = user.copy(
-            nombreCompleto = user.nombreCompleto.trim(),
+            nombres = user.nombres.trim(),
             correo = user.correo.trim()
         )
         dao.actualizar(trimmedUser)

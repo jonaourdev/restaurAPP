@@ -96,17 +96,28 @@ fun RegisterScreenBase(
                     )
                 }
 
-                // Nombre
+                // --- Nombres ---
                 OutlinedTextField(
-                    value = uiState.registerNombreCompleto,
-                    onValueChange = vm::onRegisterNombreChange,
-                    label = { Text("Nombre completo") },
+                    value = uiState.registerNombres, // Conectado a 'registerNombres'
+                    onValueChange = vm::onRegisterNombresChange, // Conectado a 'onRegisterNombresChange'
+                    label = { Text("Nombres") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(formFieldWidthFraction),
                     enabled = !isLoading
                 )
 
-                // Correo
+                // --- Apellidos ---
+                OutlinedTextField(
+                    value = uiState.registerApellidos,
+                    onValueChange = vm::onRegisterApellidosChange,
+                    label = { Text("Apellidos") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(formFieldWidthFraction),
+                    enabled = !isLoading
+                )
+
+
+                // Correo (sin cambios)
                 OutlinedTextField(
                     value = uiState.registerCorreo,
                     onValueChange = vm::onRegisterCorreoChange,
@@ -117,7 +128,7 @@ fun RegisterScreenBase(
                     enabled = !isLoading
                 )
 
-                // Contraseña
+                // Contraseña (sin cambios)
                 OutlinedTextField(
                     value = uiState.registerContrasenna,
                     onValueChange = vm::onRegisterContrasennaChange,
@@ -133,7 +144,7 @@ fun RegisterScreenBase(
                     enabled = !isLoading
                 )
 
-                // Confirmar contraseña
+                // Confirmar contraseña (sin cambios)
                 OutlinedTextField(
                     value = uiState.registerConfirmarContrasenna,
                     onValueChange = vm::onRegisterConfirmarContrasennaChange,
@@ -145,7 +156,7 @@ fun RegisterScreenBase(
 
                 Spacer(Modifier.height(spaceAfterFields))
 
-                // Botón Registrarte
+                // Botón Registrarte (sin cambios)
                 Button(
                     onClick = onRegisterClick,
                     modifier = Modifier
@@ -156,7 +167,7 @@ fun RegisterScreenBase(
                     Text("Registrarte")
                 }
                 Spacer(modifier = Modifier.height(6.dp))
-                // Botón Cancelar
+                // Botón Cancelar (sin cambios)
                 TextButton(onClick = onGoLogin, enabled = !isLoading) {
                     Text(
                         "¿Ya tienes cuenta? Inicia sesión aquí",

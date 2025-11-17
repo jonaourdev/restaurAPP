@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
@@ -18,11 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.restaurapp.R
 import com.example.restaurapp.viewmodel.AuthViewModel
 
 @Composable
@@ -57,9 +59,12 @@ fun ProfileScreenBase(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth(cardAndButtonWidthFraction)
         ) {
-            Image(
-                imageVector = Icons.Default.AccountCircle,
+            // CAMBIO 1: Usar AsyncImage para mostrar la foto del usuario
+            AsyncImage(
+                model = currentUser?.photoUrl,
                 contentDescription = "Avatar de usuario",
+                placeholder = painterResource(id = R.drawable.ic_default_avatar),
+                error = painterResource(id = R.drawable.ic_default_avatar),
                 modifier = Modifier
                     .size(avatarSize)
                     .clip(CircleShape)
@@ -67,8 +72,9 @@ fun ProfileScreenBase(
                 contentScale = ContentScale.Crop
             )
 
+            // CAMBIO 2: Unir nombres y apellidos para mostrar el nombre completo
             Text(
-                text = currentUser?.nombreCompleto ?: "Usuario Invitado",
+                text = if (currentUser != null) "${currentUser.nombres} ${currentUser.apellidos}" else "Usuario Invitado",
                 style = nameTextStyle,
                 fontWeight = FontWeight.Bold
             )
@@ -81,7 +87,7 @@ fun ProfileScreenBase(
 
         Spacer(modifier = Modifier.height(spaceAfterAvatar))
 
-        // --- SECCIÓN DE OPCIONES ---
+        // --- SECCIÓN DE OPCIONES (sin cambios) ---
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth(cardAndButtonWidthFraction)
@@ -157,7 +163,7 @@ fun ProfileScreenBase(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // --- BOTÓN CERRAR SESIÓN ---
+        // --- BOTÓN CERRAR SESIÓN (sin cambios) ---
         Button(
             onClick = {
                 vm.logout()

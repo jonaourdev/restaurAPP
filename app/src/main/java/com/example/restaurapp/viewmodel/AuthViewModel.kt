@@ -18,14 +18,16 @@ data class AuthUiState(
     val loginCorreo: String = "",
     val loginContrasenna: String = "",
 
-    // Campos para la pantalla de Registro
-    val registerNombreCompleto: String = "",
+    // --- CAMPOS DE REGISTRO ACTUALIZADOS ---
+    val registerNombres: String = "",
+    val registerApellidos: String = "",
     val registerCorreo: String = "",
     val registerContrasenna: String = "",
     val registerConfirmarContrasenna: String = "",
 
-    // --- CAMPOS PARA EDICIÓN DE PERFIL ---
-    val editNombreCompleto: String = "",
+    // --- CAMPOS DE EDICIÓN DE PERFIL ACTUALIZADOS ---
+    val editNombres: String = "",
+    val editApellidos: String = "",
     val editCorreo: String = "",
     val editProfileImageUri: Uri? = null,
     val updateSuccess: Boolean = false,
@@ -45,7 +47,7 @@ class AuthViewModel(
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    // --- FUNCIONES DE LOGIN ---
+    // --- FUNCIONES DE LOGIN (sin cambios) ---
     fun onLoginCorreoChange(v: String) = _uiState.update { it.copy(loginCorreo = v, error = null) }
     fun onLoginContrasennaChange(v: String) = _uiState.update { it.copy(loginContrasenna = v, error = null) }
 
@@ -62,8 +64,9 @@ class AuthViewModel(
         }
     }
 
-    // --- FUNCIONES DE REGISTRO ---
-    fun onRegisterNombreChange(v: String) = _uiState.update { it.copy(registerNombreCompleto = v, error = null) }
+    // --- FUNCIONES DE REGISTRO (ACTUALIZADAS) ---
+    fun onRegisterNombresChange(v: String) = _uiState.update { it.copy(registerNombres = v, error = null) }
+    fun onRegisterApellidosChange(v: String) = _uiState.update { it.copy(registerApellidos = v, error = null) }
     fun onRegisterCorreoChange(v: String) = _uiState.update { it.copy(registerCorreo = v, error = null) }
     fun onRegisterContrasennaChange(v: String) = _uiState.update { it.copy(registerContrasenna = v, error = null) }
     fun onRegisterConfirmarContrasennaChange(v: String) = _uiState.update { it.copy(registerConfirmarContrasenna = v, error = null) }
@@ -73,7 +76,7 @@ class AuthViewModel(
         _uiState.update { it.copy(error = null) }
 
         // --- Validaciones de Registro ---
-        if (f.registerNombreCompleto.isBlank() || f.registerCorreo.isBlank() || f.registerContrasenna.isBlank()) {
+        if (f.registerNombres.isBlank() || f.registerApellidos.isBlank() || f.registerCorreo.isBlank() || f.registerContrasenna.isBlank()) {
             _uiState.update { it.copy(error = "Completa todos los campos.") }
             return@launch
         }
@@ -93,8 +96,10 @@ class AuthViewModel(
 
         _uiState.update { it.copy(isLoading = true) }
         try {
+            // Pasamos los campos separados al repositorio
             authRepo.register(
-                nombreCompleto = f.registerNombreCompleto,
+                nombres = f.registerNombres,
+                apellidos = f.registerApellidos,
                 correo = f.registerCorreo,
                 contrasenna = f.registerContrasenna
             )
@@ -106,20 +111,23 @@ class AuthViewModel(
         }
     }
 
-    // --- INICIO DE LA LÓGICA DE ACTUALIZACIÓN DE PERFIL ---
+    // --- LÓGICA DE ACTUALIZACIÓN DE PERFIL (ACTUALIZADA) ---
 
-    fun onEditNombreChange(v: String) = _uiState.update { it.copy(editNombreCompleto = v, error = null) }
+    fun onEditNombresChange(v: String) = _uiState.update { it.copy(editNombres = v, error = null) }
+    fun onEditApellidosChange(v: String) = _uiState.update { it.copy(editApellidos = v, error = null) }
     fun onEditCorreoChange(v: String) = _uiState.update { it.copy(editCorreo = v, error = null) }
     fun onProfileImageChange(uri: Uri){
         _uiState.update { it.copy(editProfileImageUri = uri) }
     }
+
     fun cargarDatosParaEdicion() {
         _uiState.value.currentUser?.let { user ->
             _uiState.update {
                 it.copy(
-                    editNombreCompleto = user.nombreCompleto,
+                    editNombres = user.nombres,
+                    editApellidos = user.apellidos,
                     editCorreo = user.correo,
-                    editProfileImageUri = null
+                    editProfileImageUri = null // Limpia la imagen previa al cargar
                 )
             }
         }
@@ -131,21 +139,23 @@ class AuthViewModel(
         val photoUrlString = state.editProfileImageUri?.toString() ?: currentUser?.photoUrl
 
         if (currentUser == null) {
-            _uiState.update { it.copy(error = "No se puede actualizar. No hay un usuario logeado.") }
+            _uiState.update { it.copy(error = "No se puede actualizar. No hay un usuario logueado.") }
             return@launch
         }
 
         // Validación
-        if (state.editNombreCompleto.isBlank() || state.editCorreo.isBlank()) {
-            _uiState.update { it.copy(error = "El nombre y el correo no pueden estar vacíos.") }
+        if (state.editNombres.isBlank() || state.editApellidos.isBlank() || state.editCorreo.isBlank()) {
+            _uiState.update { it.copy(error = "Nombres, apellidos y correo no pueden estar vacíos.") }
             return@launch
         }
 
         _uiState.update { it.copy(isLoading = true, error = null, updateSuccess = false) }
 
         try {
+            // Actualizamos la copia del usuario con los nuevos campos
             val updatedUser = currentUser.copy(
-                nombreCompleto = state.editNombreCompleto,
+                nombres = state.editNombres,
+                apellidos = state.editApellidos,
                 correo = state.editCorreo,
                 photoUrl = photoUrlString
             )
@@ -166,12 +176,9 @@ class AuthViewModel(
         }
     }
 
-
     fun resetUpdateStatus() {
         _uiState.update { it.copy(updateSuccess = false, error = null) }
     }
-
-
 
     fun logout() {
         _uiState.value = AuthUiState()
@@ -180,7 +187,8 @@ class AuthViewModel(
     fun limpiarFormularioRegistro() {
         _uiState.update {
             it.copy(
-                registerNombreCompleto = "",
+                registerNombres = "",
+                registerApellidos = "",
                 registerCorreo = "",
                 registerContrasenna = "",
                 registerConfirmarContrasenna = "",
