@@ -44,6 +44,7 @@ import com.example.restaurapp.ui.screens.addFamilyScreeen.AddFamilyScreen
 import com.example.restaurapp.ui.screens.detailConceptScreen.DetailConceptScreen
 import com.example.restaurapp.ui.screens.editProfileScreen.EditProfileScreen
 import com.example.restaurapp.ui.screens.familyDetailScreen.FamilyDetailScreen
+import com.example.restaurapp.ui.screens.favoritesScreen.FavoriteScreen
 
 @Composable
 fun AppNavigation(windowSizeClass: WindowSizeClass) {
@@ -67,19 +68,34 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
 fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClass) {
 
     val context = LocalContext.current
-    val db = AppDatabase.get(context)
+    val db = remember { AppDatabase.get(context) }
 
-    val authRepository = AuthRepository(db.userDao())
-    val userRepository = UserRepository(db.userDao())
-    val conceptRepository = ConceptRepository(
-        db.conceptDao(),
-        db.familyDao())
+    // Se crean los repositorios y factories una sola vez
+    val authRepository = remember { AuthRepository(db.userDao()) }
+    val userRepository = remember { UserRepository(db.userDao()) }
+    val conceptRepository = remember { ConceptRepository(db.conceptDao(), db.familyDao()) }
 
-    val factory = AuthViewModelFactory(authRepository, userRepository)
-    val authVm: AuthViewModel = viewModel(factory = factory)
-    val conceptFactory = ConceptViewModelFactory(conceptRepository)
+    val authFactory = remember { AuthViewModelFactory(authRepository, userRepository) }
+    val conceptFactory = remember { ConceptViewModelFactory(conceptRepository) }
+
+    // --- VIEWMODELS CENTRALIZADOS ---
+    val authVm: AuthViewModel = viewModel(factory = authFactory)
+    val conceptVm: ConceptViewModel = viewModel(factory = conceptFactory)
 
     val authState by authVm.uiState.collectAsState()
+
+    // --- EFECTO DE CARGA Y LIMPIEZA DE DATOS (VERSIÓN FINAL) ---
+    LaunchedEffect(key1 = authState.currentUser) {
+        val user = authState.currentUser
+        if (user != null) {
+            // Si hay un usuario logueado, actualiza la lista con sus favoritos.
+            conceptVm.updateUserFavorites(user.id)
+        } else {
+            // Si no hay usuario (logout o invitado), limpia solo los favoritos,
+            // manteniendo la lista pública de conceptos.
+            conceptVm.clearUserFavorites()
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -101,9 +117,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             LoginScreen(
                 vm = authVm,
                 isGuestLoading = isGuestLoading,
-                onGoRegister = {
-                    navController.navigate(Screen.Register.route)
-                },
+                onGoRegister = { navController.navigate(Screen.Register.route) },
                 onGuestAccess = {
                     scope.launch {
                         isGuestLoading = true
@@ -129,12 +143,8 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             }
             RegisterScreen(
                 vm = authVm,
-                onGoLogin = {
-                    navController.popBackStack()
-                },
-                onRegisterClick = {
-                    authVm.registrar()
-                },
+                onGoLogin = { navController.popBackStack() },
+                onRegisterClick = { authVm.registrar() },
                 windowSizeClass = windowSizeClass
             )
         }
@@ -154,9 +164,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 windowSizeClass = windowSizeClass,
                 navController = navController,
                 vm = authVm,
-                onGoToEdit = {
-                    navController.navigate(Screen.EditProfile.route)
-                },
+                onGoToEdit = { navController.navigate(Screen.EditProfile.route) },
                 onLogoutClick = {
                     authVm.logout()
                     navController.navigate(Screen.Login.route) {
@@ -169,6 +177,16 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
+        // -- Favorites --
+        composable(route = Screen.Favorites.route) {
+            FavoriteScreen(
+                windowSizeClass = windowSizeClass,
+                navController = navController,
+                vm = conceptVm,
+                authVm = authVm
+            )
+        }
+
         // --- List Screen ---
         composable(
             route = Screen.ListConcept.route + "?tipo={tipo}",
@@ -177,12 +195,11 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 defaultValue = ConceptType.FORMATIVO
             })
         ) { backStackEntry ->
-            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
             val tipo = backStackEntry.arguments?.getString("tipo") ?: ConceptType.FORMATIVO
 
             ListConceptScreen(
                 windowSizeClass = windowSizeClass,
-                vm = conceptViewModel,
+                vm = conceptVm,
                 tipoConcepto = tipo,
                 authVm = authVm,
                 onNavigateBack = { navController.popBackStack() },
@@ -193,7 +210,6 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                         navController.navigate(Screen.AddConcept.route + "?tipo=$tipo")
                     }
                 },
-
                 onNavigateToFamily = { familyId ->
                     navController.navigate(Screen.DetailFamily.route + "/$familyId")
                 },
@@ -209,19 +225,15 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             arguments = listOf(navArgument("familyId") { type = NavType.LongType })
         ) { backStackEntry ->
             val familyId = backStackEntry.arguments?.getLong("familyId") ?: 0
-            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory)
 
             FamilyDetailScreen(
                 windowSizeClass = windowSizeClass,
                 familyId = familyId,
-                vm = conceptViewModel,
+                vm = conceptVm,
                 authVm = authVm,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToAddConcept = { fId ->
-                    // Navegamos a AddConceptScreen pasando el TIPO y el ID de la familia
-                    navController.navigate(
-                        Screen.AddConcept.route + "?tipo=${ConceptType.TECNICO}&familyId=$fId"
-                    )
+                    navController.navigate(Screen.AddConcept.route + "?tipo=${ConceptType.TECNICO}&familyId=$fId")
                 },
                 onNavigateToConceptDetail = { conceptId: Long->
                     navController.navigate(Screen.DetailConcept.route + "/$conceptId")
@@ -230,18 +242,13 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         }
 
         // --- Add Family Screen ---
-        composable(
-            route = Screen.AddFamily.route
-        ) {
-            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory) // Reutiliza la factory
+        composable(route = Screen.AddFamily.route) {
             AddFamilyScreen(
                 windowSizeClass = windowSizeClass,
-                vm = conceptViewModel,
-                onNavigateBack = {navController.popBackStack()}
+                vm = conceptVm,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
-
-
 
         // --- Add Concept Screen ---
         composable(
@@ -249,72 +256,60 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             arguments = listOf(
                 navArgument("tipo"){
                     type = NavType.StringType
-                    defaultValue = ConceptType.FORMATIVO},
+                    defaultValue = ConceptType.FORMATIVO
+                },
                 navArgument("familyId"){
                     type = NavType.LongType
                     defaultValue = -1L
-            })
+                }
+            )
         ) { backStackEntry ->
-            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory)
             val tipo = backStackEntry.arguments?.getString("tipo") ?: ConceptType.FORMATIVO
             val familyId = backStackEntry.arguments?.getLong("familyId") ?: -1L
 
             LaunchedEffect(key1 = tipo, key2 = familyId) {
-                conceptViewModel.onConceptTypeChange(tipo)
-
+                conceptVm.onConceptTypeChange(tipo)
                 if (familyId != -1L) {
-                    conceptViewModel.setCurrentFamilyId(familyId)
+                    conceptVm.setCurrentFamilyId(familyId)
                 } else {
-                    conceptViewModel.setCurrentFamilyId(null)
+                    conceptVm.setCurrentFamilyId(null)
                 }
             }
 
             DisposableEffect(Unit) {
-                onDispose {
-                    conceptViewModel.setCurrentFamilyId(null)
-                }
+                onDispose { conceptVm.setCurrentFamilyId(null) }
             }
-
 
             AddConceptScreen(
                 windowSizeClass = windowSizeClass,
-                vm = conceptViewModel,
-                onNavigateBack = {navController.popBackStack()}
+                vm = conceptVm,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
-
-         //--- Edit Profile Screen ---
+        //--- Edit Profile Screen ---
         composable(route = Screen.EditProfile.route) {
             EditProfileScreen(
                 windowSizeClass = windowSizeClass,
                 vm = authVm,
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
-
 
         // --- Detail Concept Screen ---
         composable(
             route = Screen.DetailConcept.route + "/{conceptId}",
             arguments = listOf(navArgument("conceptId") {type = NavType.LongType})
-            ) { backStackEntry ->
+        ) { backStackEntry ->
             val conceptId = backStackEntry.arguments?.getLong("conceptId") ?: 0
-            val conceptViewModel: ConceptViewModel = viewModel(factory = conceptFactory)
 
             DetailConceptScreen(
                 windowSizeClass = windowSizeClass,
                 conceptId = conceptId,
-                vm = conceptViewModel,
+                vm = conceptVm,
+                authVm = authVm,
                 onNavigateBack = { navController.popBackStack() }
             )
-
         }
-
     }
 }
-
-
-
