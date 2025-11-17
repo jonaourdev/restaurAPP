@@ -51,12 +51,12 @@ Las principales funcionalidades de **Excelsior Restaur-App** son:
 
 ---
 
-## ▶️ **Pasos para ejecutar el proyecto**
+## **Captura del APK firmado y .jks**
+<img width="621" height="57" alt="image" src="https://github.com/user-attachments/assets/dd7845d7-e3bf-4fd1-8c1a-6b47701d9032" />
 
 ---
 
-## **Captura del APK firmado y .jks**
-<img width="621" height="57" alt="image" src="https://github.com/user-attachments/assets/dd7845d7-e3bf-4fd1-8c1a-6b47701d9032" />
+## ▶️ **Pasos para ejecutar el proyecto**
 
 ---
 
