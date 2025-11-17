@@ -2,37 +2,39 @@ package com.example.restaurapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.restaurapp.model.local.concepts.ConceptEntity
 import com.example.restaurapp.model.local.concepts.ConceptType
-import com.example.restaurapp.model.local.concepts.ConceptWithFavorite // Importa el nuevo modelo
-import com.example.restaurapp.model.local.concepts.FamilyEntity
+import com.example.restaurapp.model.network.*
 import com.example.restaurapp.model.repository.ConceptRepository
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// --- UiState ACTUALIZADO ---
+// Mantiene los datos de la red
 data class ConceptUiState(
-    // Campos para el formulario de creación/edición de conceptos
     val nombreConcepto: String = "",
     val descripcion: String = "",
     val tipoSeleccionado: String = ConceptType.FORMATIVO,
-    //Campos para familias
-    val families: List<FamilyEntity> = emptyList(),
+
+    val families: List<FamiliaNetworkDTO> = emptyList(),
+    val conceptosFormativos: List<ConceptoFormativoNetworkDTO> = emptyList(),
+
     val familyName: String = "",
     val familyDescription: String = "",
     val currentFamilyId: Long? = null,
-    // Campo para la funcionalidad de búsqueda
-    val searchQuery: String = "",
-    // Estado global de la pantalla de conceptos
+
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,
-    // Datos principales: la lista ahora contiene el estado de favorito
-    val concepts: List<ConceptWithFavorite> = emptyList(),
-    // Concepto seleccionado actualmente (para ver detalles o editar)
-    val selectedConcept: ConceptWithFavorite? = null
+
+    val selectedConcept: ConceptoTecnicoNetworkDTO? = null
+
+    // Estado para la pantalla de detalle (opcional pero recomendado)
+    // val selectedConcept: ConceptoTecnicoNetworkDTO? = null,
+    // val selectedFormativo: ConceptoFormativoNetworkDTO? = null
 )
 
 class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewModel() {
@@ -41,173 +43,186 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     val uiState: StateFlow<ConceptUiState> = _uiState.asStateFlow()
 
     init {
-        // --- CARGA PÚBLICA INICIAL ---
-        // Al iniciar el ViewModel, cargamos todos los datos que son públicos
-        // y visibles para cualquier usuario, incluido el invitado.
-        fetchAllPublicData()
-        fetchAllFamilies()
+        // Carga inicial para invitado (userId = 0)
+        refreshAllData(0)
     }
 
     /**
-     * Carga los datos de conceptos que no dependen de un usuario.
-     * Usa un `userId` ficticio (ej. 0) para obtener la lista sin favoritos.
+     * Carga/refresca todos los datos de familias y conceptos
+     * para un usuario específico (0 si es invitado).
      */
-    private fun fetchAllPublicData() = viewModelScope.launch {
-        _uiState.update { it.copy(isLoading = true, error = null) }
-        try {
-            // Usamos un userId que no existirá (como 0) para asegurar que ningún concepto
-            // venga marcado como favorito por defecto.
-            conceptRepository.getAllConcepts(userId = 0).collect { publicConcepts ->
+    fun refreshAllData(userId: Int) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                // 1. Inicia ambas llamadas en paralelo con 'async'
+                val familiasDeferred = async { conceptRepository.getAllFamilies(userId) }
+                val formativosDeferred = async { conceptRepository.getConceptosFormativos(userId) }
+
+                // 2. Espera a que ambas terminen y recoge los resultados
+                val nuevasFamilias = familiasDeferred.await()
+                val nuevosFormativos = formativosDeferred.await()
+
+                // 3. Realiza UNA SOLA actualización del estado con TODOS los datos nuevos
                 _uiState.update { currentState ->
                     currentState.copy(
-                        isLoading = false,
-                        concepts = publicConcepts
+                        families = nuevasFamilias,
+                        conceptosFormativos = nuevosFormativos,
+                        isLoading = false // Apagamos el loading aquí
                     )
                 }
-            }
-        } catch (e: Exception) {
-            _uiState.update { it.copy(isLoading = false, error = "Error al cargar datos públicos: ${e.message}") }
-        }
-    }
 
-    /**
-     * Actualiza la lista de conceptos con el estado de favorito para un usuario específico.
-     * Esta función es llamada desde la UI cuando un usuario inicia sesión.
-     */
-    fun updateUserFavorites(userId: Int) {
-        viewModelScope.launch {
-            // No mostramos el indicador de carga para que la actualización sea fluida.
-            try {
-                conceptRepository.getAllConcepts(userId).collect { conceptsWithFavorites ->
-                    _uiState.update { it.copy(concepts = conceptsWithFavorites) }
-                }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Error al actualizar favoritos: ${e.message}") }
+                _uiState.update { it.copy(error = "Error al cargar datos: ${e.message}", isLoading = false) }
             }
-        }
-    }
-
-    /**
-     * Limpia solo los datos de favoritos del usuario al cerrar sesión,
-     * volviendo a cargar la lista de conceptos pública.
-     */
-    fun clearUserFavorites() {
-        // Simplemente volvemos a cargar la lista pública, que no tiene favoritos.
-        fetchAllPublicData()
-    }
-
-    fun toggleFavorite(conceptWithFavorite: ConceptWithFavorite, userId: Int) = viewModelScope.launch {
-        try {
-            val conceptId = conceptWithFavorite.concept.id
-            if (conceptWithFavorite.isFavorite) {
-                conceptRepository.removeFavorite(userId, conceptId)
-            } else {
-                conceptRepository.addFavorite(userId, conceptId)
-            }
-        } catch (e: Exception) {
-            _uiState.update { it.copy(error = "Error al actualizar el favorito: ${e.message}") }
-        }
-    }
-
-    // --- El resto de las funciones permanecen mayormente igual ---
-
-    fun onConceptNameChange(name: String) {
-        _uiState.update { it.copy(nombreConcepto = name, error = null) }
-    }
-
-    fun onDescriptionChange(description: String) {
-        _uiState.update { it.copy(descripcion = description, error = null) }
-    }
-
-    fun onConceptTypeChange(tipo: String){
-        _uiState.update { it.copy(tipoSeleccionado = tipo) }
-    }
-
-    fun onSearchQueryChange(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
-    }
-
-    fun addConcept() = viewModelScope.launch {
-        val state = _uiState.value
-        if (state.nombreConcepto.isBlank() || state.descripcion.isBlank()) {
-            _uiState.update { it.copy(error = "El nombre y la descripción no pueden estar vacíos.") }
-            return@launch
-        }
-        _uiState.update { it.copy(isLoading = true, error = null) }
-        try {
-            val newConcept = ConceptEntity(
-                nombreConcepto = state.nombreConcepto.trim(),
-                descripcion = state.descripcion.trim(),
-                tipo = state.tipoSeleccionado,
-                familyId = state.currentFamilyId
-            )
-            conceptRepository.insert(newConcept)
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    successMessage = "Concepto '${newConcept.nombreConcepto}' añadido con éxito.",
-                    nombreConcepto = "",
-                    descripcion = ""
-                )
-            }
-        } catch (e: Exception) {
-            _uiState.update { it.copy(isLoading = false, error = "Error al guardar el concepto: ${e.message}") }
+            // El 'finally' ya no es necesario porque controlamos 'isLoading' en los bloques try/catch
         }
     }
 
     fun selectConceptById(conceptId: Long) {
-        val concept = _uiState.value.concepts.find { it.concept.id == conceptId }
-        _uiState.update { it.copy(selectedConcept = concept) }
-    }
+        val state = _uiState.value
+        var foundConcept: ConceptoTecnicoNetworkDTO? = null
 
-    fun clearMessages() {
-        _uiState.update { it.copy(error = null, successMessage = null) }
-    }
+        // Primero busca en los conceptos formativos
+        foundConcept = state.conceptosFormativos.find { it.formativeCId == conceptId }?.let {
+            // Mapea el formativo a un DTO técnico genérico para la pantalla de detalle
+            ConceptoTecnicoNetworkDTO(
+                technicalId = it.formativeCId,
+                technicalName = it.formativeName,
+                technicalDescription = it.formativeDescription,
+                isFavorite = it.isFavorite,
+                imageUrl = it.imageUrl
+            )
+        }
 
-    private fun fetchAllFamilies() = viewModelScope.launch {
-        _uiState.update { it.copy(isLoading = true) }
-        try {
-            conceptRepository.getAllFamilies().collect { familyList ->
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        isLoading = false,
-                        families = familyList
-                    )
+        // Si no lo encontró, busca en los conceptos técnicos dentro de cada familia
+        if (foundConcept == null) {
+            for (family in state.families) {
+                val concept = family.conceptosTecnicos.find { it.technicalId == conceptId }
+                if (concept != null) {
+                    foundConcept = concept
+                    break
                 }
             }
-        } catch (e: Exception){
-            _uiState.update { it.copy(isLoading = false, error = "Error al cargar las familias: ${e.message}") }
+        }
+
+        _uiState.update { it.copy(selectedConcept = foundConcept) }
+    }
+
+
+    fun updateUserFavorites(userId: Int) {
+        refreshAllData(userId)
+    }
+
+    fun clearUserFavorites() {
+        _uiState.update { currentState ->
+            val formativosLimpios = currentState.conceptosFormativos.map { it.copy(isFavorite = false) }
+
+            val familiasLimpias = currentState.families.map { family ->
+                family.copy(
+                    conceptosTecnicos = family.conceptosTecnicos.map { it.copy(isFavorite = false) }
+                )
+            }
+
+            currentState.copy(
+                conceptosFormativos = formativosLimpios,
+                families = familiasLimpias
+            )
         }
     }
 
-    fun onFamilyNameChange(name: String) {
-        _uiState.update { it.copy(familyName = name, error = null) }
+    fun toggleFavorite(userId: Int, conceptId: Long, isCurrentlyFavorite: Boolean) {
+        viewModelScope.launch {
+            try {
+                conceptRepository.toggleFavorite(userId, conceptId, isCurrentlyFavorite)
+
+                _uiState.update { currentState ->
+                    val newFormativos = currentState.conceptosFormativos.map {
+                        if (it.formativeCId == conceptId) it.copy(isFavorite = !isCurrentlyFavorite) else it
+                    }
+                    val newFamilies = currentState.families.map { family ->
+                        family.copy(conceptosTecnicos = family.conceptosTecnicos.map {
+                            if (it.technicalId == conceptId) it.copy(isFavorite = !isCurrentlyFavorite) else it
+                        })
+                    }
+                    currentState.copy(
+                        conceptosFormativos = newFormativos,
+                        families = newFamilies
+                    )
+                }
+
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Error al guardar favorito: ${e.message}") }
+            }
+        }
     }
 
-    fun onFamilyDescriptionChange(description: String) {
-        _uiState.update { it.copy(familyDescription = description, error = null) }
-    }
-
-    fun addFamily() = viewModelScope.launch {
+    fun addFamily(currentUserId: Int) = viewModelScope.launch {
         val state = _uiState.value
-        if (state.familyName.isBlank()){
-            _uiState.update { it.copy(error = "El nombre de la familia no puede estar vacío.") }
+        if (state.familyName.isBlank()) {
+            _uiState.update { it.copy(error = "El nombre no puede estar vacío.") }
             return@launch
         }
-        val newFamily = FamilyEntity(name = state.familyName, description = state.familyDescription)
-        conceptRepository.insertFamily(newFamily)
-        _uiState.update { it.copy(familyName = "", familyDescription = "") }
-    }
-
-    fun setCurrentFamilyId(id: Long?) {
-        _uiState.update { it.copy(currentFamilyId = id) }
-    }
-
-    // Esta función ya no es necesaria con la nueva lógica, pero la dejamos por si la usas en otro lado.
-    // La nueva función es `clearUserFavorites`.
-    fun clearUserSpecificData() {
-        _uiState.update {
-            ConceptUiState()
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        try {
+            conceptRepository.addFamily(state.familyName, state.familyDescription, currentUserId)
+            _uiState.update { it.copy(
+                successMessage = "Familia creada",
+                familyName = "",
+                familyDescription = ""
+            )}
+            refreshAllData(currentUserId)
+        } catch (e: Exception) {
+            _uiState.update { it.copy(isLoading = false, error = e.message) }
         }
     }
+
+    fun addConcept(currentUserId: Int) = viewModelScope.launch {
+        val state = _uiState.value
+        if (state.nombreConcepto.isBlank()) {
+            _uiState.update { it.copy(error = "El nombre no puede estar vacío.") }
+            return@launch
+        }
+        _uiState.update { it.copy(isLoading = true, error = null) }
+
+        try {
+            if (state.tipoSeleccionado == ConceptType.FORMATIVO) {
+                conceptRepository.addConceptoFormativo(
+                    state.nombreConcepto,
+                    state.descripcion,
+                    currentUserId
+                )
+            } else { // Es TECNICO
+                if (state.currentFamilyId == null) {
+                    _uiState.update { it.copy(isLoading = false, error = "No se seleccionó una familia.") }
+                    return@launch
+                }
+                conceptRepository.addConceptoTecnico(
+                    state.nombreConcepto,
+                    state.descripcion,
+                    currentUserId,
+                    state.currentFamilyId
+                )
+            }
+
+            _uiState.update { it.copy(
+                successMessage = "Concepto creado",
+                nombreConcepto = "",
+                descripcion = ""
+            )}
+            refreshAllData(currentUserId)
+
+        } catch (e: Exception) {
+            _uiState.update { it.copy(isLoading = false, error = e.message) }
+        }
+    }
+
+    // --- Setters (Sin cambios) ---
+    fun onConceptNameChange(name: String) { _uiState.update { it.copy(nombreConcepto = name, error = null) } }
+    fun onDescriptionChange(description: String) { _uiState.update { it.copy(descripcion = description, error = null) } }
+    fun onConceptTypeChange(tipo: String){ _uiState.update { it.copy(tipoSeleccionado = tipo) } }
+    fun onFamilyNameChange(name: String) { _uiState.update { it.copy(familyName = name, error = null) } }
+    fun onFamilyDescriptionChange(description: String) { _uiState.update { it.copy(familyDescription = description, error = null) } }
+    fun setCurrentFamilyId(id: Long?) { _uiState.update { it.copy(currentFamilyId = id) } }
+    fun clearMessages() { _uiState.update { it.copy(error = null, successMessage = null) } }
 }

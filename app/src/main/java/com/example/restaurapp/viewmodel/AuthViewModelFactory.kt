@@ -35,7 +35,9 @@ class AuthViewModelFactory(
     companion object{
         fun getInstance(context: Context): AuthViewModelFactory {
             val db = AppDatabase.get(context)
-            val authRepository = AuthRepository(db.userDao())
+
+            val authRepository = AuthRepository()
+
             val userRepository = UserRepository(db.userDao())
             return AuthViewModelFactory(authRepository, userRepository)
         }

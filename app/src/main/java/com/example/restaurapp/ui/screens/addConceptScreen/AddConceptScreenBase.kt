@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.ConceptUiState
 import com.example.restaurapp.viewmodel.ConceptViewModel
 
@@ -22,9 +23,11 @@ fun AddConceptScreenBase(
     modifier: Modifier = Modifier,
     vm: ConceptViewModel,
     onNavigateBack: () -> Unit,
-    formWidth: Float
+    formWidth: Float,
+    authVm: AuthViewModel
 ) {
     val uiState by vm.uiState.collectAsState()
+    val authState by authVm.uiState.collectAsState()
 
     LaunchedEffect(uiState.successMessage, uiState.error) {
         if (uiState.successMessage != null || uiState.error != null) {
@@ -65,9 +68,12 @@ fun AddConceptScreenBase(
                     uiState = uiState,
                     onNameChange = vm::onConceptNameChange,
                     onDescriptionChange = vm::onDescriptionChange,
-                    onSaveClick = vm::addConcept
+                    onSaveClick = {
+                        authState.currentUser?.id?.let { userId ->
+                            vm.addConcept(userId)
+                        }
+                    }
                 )
-
                 if (uiState.isLoading) {
                     Spacer(Modifier.height(16.dp))
                     CircularProgressIndicator()

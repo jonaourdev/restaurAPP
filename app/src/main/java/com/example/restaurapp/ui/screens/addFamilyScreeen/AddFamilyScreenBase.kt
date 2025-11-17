@@ -32,6 +32,7 @@ import com.example.restaurapp.viewmodel.ConceptViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.ConceptUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,9 +41,11 @@ fun AddFamilyScreenBase(
     modifier: Modifier = Modifier,
     vm: ConceptViewModel,
     onNavigateBack: () -> Unit,
-    formWidth: Float
+    formWidth: Float,
+    authVm: AuthViewModel
 ){
     val uiState by vm.uiState.collectAsState()
+    val authState by authVm.uiState.collectAsState()
 
     LaunchedEffect(uiState.successMessage, uiState.error) {
         if (uiState.successMessage != null || uiState.error != null) {
@@ -81,7 +84,11 @@ fun AddFamilyScreenBase(
                     uiState = uiState,
                     onNameChange = vm::onFamilyNameChange,
                     onDescriptionChange = vm::onFamilyDescriptionChange,
-                    onSaveClick = vm::addFamily
+                    onSaveClick = {
+                        authState.currentUser?.id?.let { userId ->
+                            vm.addFamily(userId) // o vm.addFamily(userId)
+                        }
+                    }
                 )
 
                 if (uiState.isLoading) {
