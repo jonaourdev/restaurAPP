@@ -53,6 +53,8 @@ Las principales funcionalidades de **Excelsior Restaur-App** son:
 
 ## ▶️ **Pasos para ejecutar el proyecto**
 
+<img width="621" height="57" alt="image" src="https://github.com/user-attachments/assets/dd7845d7-e3bf-4fd1-8c1a-6b47701d9032" />
+
 ### 1. **Clonar el repositorio**
 ```bash
 git clone https://github.com/TU-USUARIO/Excelsior-RestaurApp.git
