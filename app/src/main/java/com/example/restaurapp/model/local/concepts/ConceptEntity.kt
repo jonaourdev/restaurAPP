@@ -18,7 +18,6 @@ data class ConceptEntity (
     val descripcion: String,
     val tipo: String,
     val familyId: Long? = null,
-    val isFavorite: Boolean = false,
     val imageUrl: String? = null
 )
 

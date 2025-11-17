@@ -4,14 +4,14 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items // Asegúrate de que este import esté presente
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,12 +24,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.restaurapp.model.local.concepts.ConceptEntity
 import com.example.restaurapp.model.local.concepts.ConceptType
+import com.example.restaurapp.model.local.concepts.ConceptWithFavorite // Importa el nuevo modelo
 import com.example.restaurapp.model.local.concepts.FamilyEntity
 import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.ConceptViewModel
-import androidx.compose.foundation.lazy.grid.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,7 +106,7 @@ fun ListConceptScreenBase(
                         horizontalArrangement = Arrangement.spacedBy(itemSpacing)
                     ) {
                         if (tipoConcepto == ConceptType.TECNICO) {
-                            // --- Lógica para Familias Técnicas ---
+                            // --- Lógica para Familias Técnicas (sin cambios) ---
                             if (uiState.families.isEmpty()) {
                                 item {
                                     Text(
@@ -125,11 +124,12 @@ fun ListConceptScreenBase(
                                         family = family,
                                         onClick = { onNavigateToFamily(family.id) }
                                     )
-                                 }
+                                }
                             }
                         } else {
-                            val conceptosFiltrados = uiState.concepts.filter { it.tipo == tipoConcepto }
-                            val (favoriteConcepts, otherConcepts) = conceptosFiltrados.partition { it.isFavorite }
+                            // --- Lógica para Conceptos (ACTUALIZADA) ---
+                            // La lista 'uiState.concepts' ahora es de tipo List<ConceptWithFavorite>
+                            val conceptosFiltrados = uiState.concepts.filter { it.concept.tipo == tipoConcepto }
 
                             if (conceptosFiltrados.isEmpty()) {
                                 item {
@@ -140,38 +140,24 @@ fun ListConceptScreenBase(
                                     )
                                 }
                             } else {
-                                if (favoriteConcepts.isNotEmpty()) {
-                                    item(span = { GridItemSpan(maxLineSpan) }) {
-                                        Text(
-                                            text = "Favoritos",
-                                            style = MaterialTheme.typography.titleLarge,
-                                            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
-                                        )
-                                    }
-                                    items(favoriteConcepts) { concept ->
-                                        ConceptListItem(
-                                            concept = concept,
-                                            onFavoriteClick = { vm.toggleFavorite(concept) },
-                                            onClick = {onNavigateToConceptDetail(concept.id)}
-                                        )
-                                    }
-                                }
-
-                                if (otherConcepts.isNotEmpty()) {
-                                    item(span = { GridItemSpan(maxLineSpan) }) {
-                                        Text(
-                                            text = if (favoriteConcepts.isNotEmpty()) "Otros Conceptos" else "Conceptos",
-                                            style = MaterialTheme.typography.titleLarge,
-                                            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
-                                        )
-                                    }
-                                    items(otherConcepts) { concept ->
-                                        ConceptListItem(
-                                            concept = concept,
-                                            onFavoriteClick = { vm.toggleFavorite(concept) },
-                                            onClick = {onNavigateToConceptDetail(concept.id)}
-                                        )
-                                    }
+                                // Renderizamos la lista completa en un solo bloque, ya no se separa por favoritos
+                                items(
+                                    items = conceptosFiltrados,
+                                    key = { it.concept.id } // La key ahora es el id del concepto anidado
+                                ) { conceptWithFavorite -> // El item ahora es de tipo ConceptWithFavorite
+                                    ConceptListItem(
+                                        conceptWithFavorite = conceptWithFavorite, // Pasamos el objeto completo
+                                        onFavoriteClick = {
+                                            // Solo permite la acción si hay un usuario logueado
+                                            authState.currentUser?.id?.let { userId ->
+                                                vm.toggleFavorite(conceptWithFavorite, userId)
+                                            }
+                                        },
+                                        onClick = {
+                                            // La navegación no cambia, solo necesita el ID del concepto
+                                            onNavigateToConceptDetail(conceptWithFavorite.concept.id)
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -184,7 +170,15 @@ fun ListConceptScreenBase(
 
 
 @Composable
-fun ConceptListItem(concept: ConceptEntity, onFavoriteClick: () -> Unit, onClick: () -> Unit) {
+fun ConceptListItem(
+    conceptWithFavorite: ConceptWithFavorite, // <-- PARÁMETRO ACTUALIZADO
+    onFavoriteClick: () -> Unit,
+    onClick: () -> Unit
+) {
+    // Extraemos los datos del objeto anidado para usarlos en la UI
+    val concept = conceptWithFavorite.concept
+    val isFavorite = conceptWithFavorite.isFavorite
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -196,22 +190,22 @@ fun ConceptListItem(concept: ConceptEntity, onFavoriteClick: () -> Unit, onClick
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = concept.nombreConcepto,
+                    text = concept.nombreConcepto, // Usamos el nombre del concepto anidado
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = concept.descripcion,
+                    text = concept.descripcion, // Usamos la descripción del concepto anidado
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(onClick = onFavoriteClick) {
                 Icon(
-                    imageVector = if (concept.isFavorite) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.Favorite,
                     contentDescription = "Favorite",
-                    tint = if (concept.isFavorite) Color.Yellow else Color.Gray
+                    tint = if (isFavorite) Color.Red else Color.Gray
                 )
             }
         }

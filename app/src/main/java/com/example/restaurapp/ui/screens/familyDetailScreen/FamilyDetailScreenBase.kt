@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items // Asegúrate de que este import esté
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -25,14 +26,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.restaurapp.ui.screens.listConceptScreen.ConceptListItem
-import com.example.restaurapp.viewmodel.ConceptViewModel
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.Dp
 import com.example.restaurapp.viewmodel.AuthViewModel
+import com.example.restaurapp.viewmodel.ConceptViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,17 +49,18 @@ fun FamilyDetailScreenBase(
     onNavigateToConceptDetail: (conceptId: Long) -> Unit,
 ){
     val uiState by vm.uiState.collectAsState()
+    val authState by authVm.uiState.collectAsState()
 
-    //Buscar familia actual
-    val family = uiState.families.find { it.id == familyId }
-
-    //Filtrar conceptos que pertenecen a la familia
-    val conceptInFamily = uiState.concepts.filter { it.familyId == familyId }
-
-    val authState by authVm.uiState.collectAsState() // <-- 2. Obtén el estado de autenticación
-    val isGuest = authState.currentUser == null     // <-- 3. Define si es invitado
+    // 1. OBTENEMOS EL ESTADO DE AUTENTICACIÓN
+    val isGuest = authState.currentUser == null
     val context = LocalContext.current
 
+    // Buscar familia actual (sin cambios)
+    val family = uiState.families.find { it.id == familyId }
+
+    // 2. FILTRADO CORREGIDO: Ahora filtramos la lista de ConceptWithFavorite
+    // Accedemos al `familyId` a través del objeto `concept` anidado.
+    val conceptsInFamily = uiState.concepts.filter { it.concept.familyId == familyId }
 
     Scaffold(
         modifier = Modifier,
@@ -69,7 +70,8 @@ fun FamilyDetailScreenBase(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
-                    } },
+                    }
+                },
             )
         },
         floatingActionButton = {
@@ -103,9 +105,9 @@ fun FamilyDetailScreenBase(
                     color = MaterialTheme.colorScheme.error
                 )
 
-                conceptInFamily.isEmpty() -> {
+                conceptsInFamily.isEmpty() -> {
                     Text(
-                        text = "Esta familia aún no tienen conceptos. Presiona '+' para añadir el primero!",
+                        text = "Esta familia aún no tiene conceptos. ¡Presiona '+' para añadir el primero!",
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
@@ -119,11 +121,21 @@ fun FamilyDetailScreenBase(
                         verticalArrangement = Arrangement.spacedBy(itemSpacing),
                         horizontalArrangement = Arrangement.spacedBy(itemSpacing)
                     ) {
-                        items(conceptInFamily) { concept ->
+                        // 3. LLAMADA A `items` ACTUALIZADA
+                        items(
+                            items = conceptsInFamily,
+                            key = { it.concept.id } // La key es el id del concepto anidado
+                        ) { conceptWithFavorite -> // El ítem ahora es de tipo ConceptWithFavorite
                             ConceptListItem(
-                                concept = concept,
-                                onClick = { onNavigateToConceptDetail(concept.id.toLong()) },
-                                onFavoriteClick = { vm.toggleFavorite(concept)}
+                                // Pasamos el objeto completo a ConceptListItem
+                                conceptWithFavorite = conceptWithFavorite,
+                                onClick = { onNavigateToConceptDetail(conceptWithFavorite.concept.id) },
+                                onFavoriteClick = {
+                                    // Solo permite la acción si hay un usuario logueado
+                                    authState.currentUser?.id?.let { userId ->
+                                        vm.toggleFavorite(conceptWithFavorite, userId)
+                                    }
+                                }
                             )
                         }
                     }
