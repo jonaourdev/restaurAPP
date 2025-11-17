@@ -71,9 +71,9 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
     val db = remember { AppDatabase.get(context) }
 
     // Se crean los repositorios y factories una sola vez
-    val authRepository = remember { AuthRepository(db.userDao()) }
+    val authRepository = remember { AuthRepository() }
     val userRepository = remember { UserRepository(db.userDao()) }
-    val conceptRepository = remember { ConceptRepository(db.conceptDao(), db.familyDao()) }
+    val conceptRepository = remember { ConceptRepository() }
 
     val authFactory = remember { AuthViewModelFactory(authRepository, userRepository) }
     val conceptFactory = remember { ConceptViewModelFactory(conceptRepository) }

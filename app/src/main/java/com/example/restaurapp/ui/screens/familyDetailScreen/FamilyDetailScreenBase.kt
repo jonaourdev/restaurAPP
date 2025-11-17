@@ -1,36 +1,24 @@
+// Contenido corregido para FamilyDetailScreenBase.kt
+
 package com.example.restaurapp.ui.screens.familyDetailScreen
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items // Asegúrate de que este import esté
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.restaurapp.ui.screens.listConceptScreen.ConceptListItem
+import com.example.restaurapp.ui.screens.listConceptScreen.ConceptListItem // Reutilizamos este Composable
 import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.ConceptViewModel
 
@@ -50,17 +38,14 @@ fun FamilyDetailScreenBase(
 ){
     val uiState by vm.uiState.collectAsState()
     val authState by authVm.uiState.collectAsState()
-
-    // 1. OBTENEMOS EL ESTADO DE AUTENTICACIÓN
     val isGuest = authState.currentUser == null
     val context = LocalContext.current
 
-    // Buscar familia actual (sin cambios)
+    // CORRECCIÓN 1: Buscar la familia en la lista de familias del UiState.
     val family = uiState.families.find { it.id == familyId }
 
-    // 2. FILTRADO CORREGIDO: Ahora filtramos la lista de ConceptWithFavorite
-    // Accedemos al `familyId` a través del objeto `concept` anidado.
-    val conceptsInFamily = uiState.concepts.filter { it.concept.familyId == familyId }
+    // CORRECCIÓN 2: Los conceptos ya están dentro del objeto 'family'. No hay que filtrar nada más.
+    val conceptsInFamily = family?.conceptosTecnicos ?: emptyList()
 
     Scaffold(
         modifier = Modifier,
@@ -78,41 +63,31 @@ fun FamilyDetailScreenBase(
             FloatingActionButton(
                 onClick = {
                     if (isGuest) {
-                        Toast.makeText(
-                            context,
-                            "Los invitados no pueden añadir. Por favor, regístrese.", Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, "Los invitados no pueden añadir.", Toast.LENGTH_SHORT).show()
                     } else {
                         onNavigateToAddConcept(familyId)
                     }
                 }
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir Concepto a esta familia")
+                Icon(Icons.Default.Add, "Añadir Concepto a esta familia")
             }
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize(),
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             when {
                 uiState.isLoading -> CircularProgressIndicator()
-
-                uiState.error != null -> Text(
-                    text = "Error: ${uiState.error}",
-                    color = MaterialTheme.colorScheme.error
-                )
-
+                uiState.error != null -> Text("Error: ${uiState.error}", color = MaterialTheme.colorScheme.error)
+                family == null -> Text("Familia no encontrada.") // Mensaje si la familia no se carga
                 conceptsInFamily.isEmpty() -> {
                     Text(
-                        text = "Esta familia aún no tiene conceptos. ¡Presiona '+' para añadir el primero!",
+                        "Esta familia aún no tiene conceptos. ¡Presiona '+' para añadir el primero!",
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
                 }
-
                 else -> {
                     LazyVerticalGrid(
                         columns = gridCells,
@@ -121,19 +96,21 @@ fun FamilyDetailScreenBase(
                         verticalArrangement = Arrangement.spacedBy(itemSpacing),
                         horizontalArrangement = Arrangement.spacedBy(itemSpacing)
                     ) {
-                        // 3. LLAMADA A `items` ACTUALIZADA
+                        // CORRECCIÓN 3: Iteramos sobre 'conceptsInFamily'
                         items(
                             items = conceptsInFamily,
-                            key = { it.concept.id } // La key es el id del concepto anidado
-                        ) { conceptWithFavorite -> // El ítem ahora es de tipo ConceptWithFavorite
+                            key = { it.technicalId }
+                        ) { concepto ->
+                            // Pasamos el concepto técnico y gestionamos los clics
                             ConceptListItem(
-                                // Pasamos el objeto completo a ConceptListItem
-                                conceptWithFavorite = conceptWithFavorite,
-                                onClick = { onNavigateToConceptDetail(conceptWithFavorite.concept.id) },
+                                // Reutilizamos el Composable, pasándole los datos correctos
+                                conceptName = concepto.technicalName,
+                                conceptDescription = concepto.technicalDescription,
+                                isFavorite = concepto.isFavorite,
+                                onClick = { onNavigateToConceptDetail(concepto.technicalId) },
                                 onFavoriteClick = {
-                                    // Solo permite la acción si hay un usuario logueado
                                     authState.currentUser?.id?.let { userId ->
-                                        vm.toggleFavorite(conceptWithFavorite, userId)
+                                        vm.toggleFavorite(userId, concepto.technicalId, concepto.isFavorite)
                                     }
                                 }
                             )

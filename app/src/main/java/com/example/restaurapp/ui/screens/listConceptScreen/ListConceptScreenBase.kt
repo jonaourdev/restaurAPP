@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.model.local.concepts.ConceptWithFavorite // Importa el nuevo modelo
 import com.example.restaurapp.model.local.concepts.FamilyEntity
+import com.example.restaurapp.model.network.FamiliaNetworkDTO
 import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.ConceptViewModel
 
@@ -127,11 +128,8 @@ fun ListConceptScreenBase(
                                 }
                             }
                         } else {
-                            // --- Lógica para Conceptos (ACTUALIZADA) ---
-                            // La lista 'uiState.concepts' ahora es de tipo List<ConceptWithFavorite>
-                            val conceptosFiltrados = uiState.concepts.filter { it.concept.tipo == tipoConcepto }
 
-                            if (conceptosFiltrados.isEmpty()) {
+                            if (uiState.conceptosFormativos.isEmpty()){
                                 item {
                                     Text(
                                         text = "Aún no hay conceptos formativos. ¡Presiona '+' para añadir el primero!",
@@ -140,22 +138,21 @@ fun ListConceptScreenBase(
                                     )
                                 }
                             } else {
-                                // Renderizamos la lista completa en un solo bloque, ya no se separa por favoritos
                                 items(
-                                    items = conceptosFiltrados,
-                                    key = { it.concept.id } // La key ahora es el id del concepto anidado
-                                ) { conceptWithFavorite -> // El item ahora es de tipo ConceptWithFavorite
+                                    items = uiState.conceptosFormativos,
+                                    key = { it.formativeCId }
+                                ) { concepto ->
                                     ConceptListItem(
-                                        conceptWithFavorite = conceptWithFavorite, // Pasamos el objeto completo
+                                        conceptName = concepto.formativeName,
+                                        conceptDescription = concepto.formativeDescription,
+                                        isFavorite = concepto.isFavorite,
                                         onFavoriteClick = {
-                                            // Solo permite la acción si hay un usuario logueado
                                             authState.currentUser?.id?.let { userId ->
-                                                vm.toggleFavorite(conceptWithFavorite, userId)
+                                                vm.toggleFavorite(userId, concepto.formativeCId, concepto.isFavorite)
                                             }
                                         },
                                         onClick = {
-                                            // La navegación no cambia, solo necesita el ID del concepto
-                                            onNavigateToConceptDetail(conceptWithFavorite.concept.id)
+                                            onNavigateToConceptDetail(concepto.formativeCId)
                                         }
                                     )
                                 }
@@ -171,14 +168,12 @@ fun ListConceptScreenBase(
 
 @Composable
 fun ConceptListItem(
-    conceptWithFavorite: ConceptWithFavorite, // <-- PARÁMETRO ACTUALIZADO
+    conceptName: String,
+    conceptDescription: String,
+    isFavorite: Boolean,
     onFavoriteClick: () -> Unit,
     onClick: () -> Unit
 ) {
-    // Extraemos los datos del objeto anidado para usarlos en la UI
-    val concept = conceptWithFavorite.concept
-    val isFavorite = conceptWithFavorite.isFavorite
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -190,15 +185,16 @@ fun ConceptListItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = concept.nombreConcepto, // Usamos el nombre del concepto anidado
+                    text = conceptName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = concept.descripcion, // Usamos la descripción del concepto anidado
+                    text = conceptDescription,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2 // Evita que descripciones muy largas rompan el layout
                 )
             }
             IconButton(onClick = onFavoriteClick) {
@@ -213,7 +209,7 @@ fun ConceptListItem(
 }
 
 @Composable
-fun FamilyListItem(family: FamilyEntity, onClick: () -> Unit) {
+fun FamilyListItem(family: FamiliaNetworkDTO, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
@@ -227,10 +223,11 @@ fun FamilyListItem(family: FamilyEntity, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
+                // Usa los campos del DTO
                 Text(family.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 if (!family.description.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(family.description, style = MaterialTheme.typography.bodyMedium)
+                    Text(family.description, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
                 }
             }
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Ver detalles")

@@ -1,11 +1,6 @@
 package com.example.restaurapp.model.network
 
 
-import com.example.restaurapp.model.network.ConceptoFormativoNetworkDTO
-import com.example.restaurapp.model.network.FamiliaNetworkDTO
-
-
-import com.example.restaurapp.model.network.FamiliaCreateDTO
 import com.example.restaurapp.model.network.ConceptoTecnicoCreateDTO
 import com.example.restaurapp.model.network.ConceptoFormativoCreateDTO
 
@@ -20,7 +15,7 @@ import retrofit2.http.Path
 import retrofit2.http.DELETE
 import retrofit2.http.Query
 
-private const val BASE_URL = "http://10.0.2.2:8090/api/v1/"
+private const val BASE_URL = "http://98.92.245.174:8080"
 
 object RetrofitClient {
     val apiService: ApiService by lazy {
@@ -34,39 +29,35 @@ object RetrofitClient {
 
 interface ApiService {
 
-    @POST("usuarios")
-    suspend fun registrarUsuario(@Body usuario: UsuarioCreateDTO): Response<UsuarioResponseDTO>
-    @GET("usuarios/correo/{correo}")
-    suspend fun buscarPorCorreo(@Path("correo") correo: String): Response<UsuarioResponseDTO>
-
-
-    @GET("familias")
-
+    // --- GET (Leer datos) ---
+    @GET("/api/v1/familias")
     suspend fun getFamilias(@Query("userId") userId: Int): List<FamiliaNetworkDTO>
 
-    @GET("conceptos-formativos")
+    @GET("/api/v1/conceptos-formativos")
     suspend fun getConceptosFormativos(@Query("userId") userId: Int): List<ConceptoFormativoNetworkDTO>
 
-    @GET("conceptos-tecnicos")
-    suspend fun getConceptosTecnicos(@Query("userId") userId: Int): List<ConceptoTecnicoNetworkDTO>
+    // --- POST (Crear datos) ---
+    // El DTO se envía en el cuerpo (Body) de la petición
+    @POST("/api/v1/familias")
+    suspend fun createFamilia(@Body familia: FamiliaCreateDTO): Response<Unit>
 
-    @POST("familias")
-    suspend fun createFamilia(@Body familia: FamiliaCreateDTO): Response<FamiliaNetworkDTO>
-    @POST("conceptos-tecnicos")
-    suspend fun createConceptoTecnico(@Body concepto: ConceptoTecnicoCreateDTO): Response<ConceptoTecnicoNetworkDTO>
+    @POST("/api/v1/conceptos-tecnicos")
+    suspend fun createConceptoTecnico(@Body concepto: ConceptoTecnicoCreateDTO): Response<Unit>
 
-    @POST("conceptos-formativos")
-    suspend fun createConceptoFormativo(@Body concepto: ConceptoFormativoCreateDTO): Response<ConceptoFormativoNetworkDTO>
+    @POST("/api/v1/conceptos-formativos")
+    suspend fun createConceptoFormativo(@Body concepto: ConceptoFormativoCreateDTO): Response<Unit>
 
-    @POST("usuarios/{userId}/favoritos/{conceptId}")
-    suspend fun addFavorite(
-        @Path("userId") userId: Int,
-        @Path("conceptId") conceptId: Long
-    ): Response<Unit>
+    // --- Favoritos ---
+    @POST("/api/v1/usuarios/favoritos")
+    suspend fun addFavorite(@Query("userId") userId: Int, @Query("conceptId") conceptId: Long): Response<Unit>
 
-    @DELETE("usuarios/{userId}/favoritos/{conceptId}")
-    suspend fun removeFavorite(
-        @Path("userId") userId: Int,
-        @Path("conceptId") conceptId: Long
-    ): Response<Unit>
+    @DELETE("/api/v1/usuarios/{userId}/favoritos/{conceptId}")
+    suspend fun removeFavorite(@Path("userId") userId: Int, @Path("conceptId") conceptId: Long): Response<Unit>
+
+    @POST("/api/v1/usuarios")
+    suspend fun createUser(@Body user: UserCreateDTO): Response<Unit>
+
+    @GET("/api/v1/usuarios/{correo}")
+    suspend fun getUserByEmail(@Path("correo") correo: String): Response<UserResponseDTO>
+
 }

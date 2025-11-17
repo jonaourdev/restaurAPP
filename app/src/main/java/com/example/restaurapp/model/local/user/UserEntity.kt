@@ -11,5 +11,6 @@ data class UserEntity (
     val apellidos: String,
     val correo: String,
     val contrasenna: String,
-    val photoUrl: String? = null
+    val photoUrl: String? = null,
+    val rol: String? = "ROLE_USUARIO"
 )

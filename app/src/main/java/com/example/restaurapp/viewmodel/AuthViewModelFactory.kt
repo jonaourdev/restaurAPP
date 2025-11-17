@@ -36,8 +36,6 @@ class AuthViewModelFactory(
         fun getInstance(context: Context): AuthViewModelFactory {
             val db = AppDatabase.get(context)
 
-            // --- CAMBIO AQUÍ ---
-            // AuthRepository ya no necesita el DAO en su constructor
             val authRepository = AuthRepository()
 
             val userRepository = UserRepository(db.userDao())

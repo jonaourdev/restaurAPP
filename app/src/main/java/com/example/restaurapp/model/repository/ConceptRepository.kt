@@ -4,10 +4,8 @@ import android.util.Log
 import com.example.restaurapp.model.local.concepts.ConceptType // Aún lo usamos para la lógica de tipo
 import com.example.restaurapp.model.network.ApiService
 import com.example.restaurapp.model.network.ConceptoFormativoCreateDTO
-import com.example.restaurapp.model.network.ConceptoFormativoNetworkDTO
 import com.example.restaurapp.model.network.ConceptoTecnicoCreateDTO
-import com.example.restaurapp.model.network.FamiliaCreateDTO
-import com.example.restaurapp.model.network.FamiliaNetworkDTO
+import com.example.restaurapp.model.network.*
 import com.example.restaurapp.model.network.RetrofitClient
 import kotlinx.coroutines.flow.Flow
 
@@ -92,7 +90,7 @@ open class ConceptRepository(
         val dto = ConceptoFormativoCreateDTO(
             formativeName = nombre.trim(),
             formativeDescription = desc.trim(),
-            usuarioCreadorId = userId
+            usuarioCreador = IdWrapper(id = userId)
         )
 
         Log.d("ConceptRepository", "Creando formativo: $nombre")
@@ -114,8 +112,8 @@ open class ConceptRepository(
         val dto = ConceptoTecnicoCreateDTO(
             technicalName = nombre.trim(),
             technicalDescription = desc.trim(),
-            usuarioCreadorId = userId,
-            familiaId = familiaId
+            usuarioCreador = IdWrapper(id = userId),
+            familia = IdWrapper(id = familiaId)
         )
 
         Log.d("ConceptRepository", "Creando técnico: $nombre para familia $familiaId")

@@ -3,8 +3,7 @@ package com.example.restaurapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.restaurapp.model.local.concepts.ConceptType
-import com.example.restaurapp.model.network.ConceptoFormativoNetworkDTO
-import com.example.restaurapp.model.network.FamiliaNetworkDTO
+import com.example.restaurapp.model.network.*
 import com.example.restaurapp.model.repository.ConceptRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +28,8 @@ data class ConceptUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,
+
+    val selectedConcept: ConceptoTecnicoNetworkDTO? = null
 
     // Estado para la pantalla de detalle (opcional pero recomendado)
     // val selectedConcept: ConceptoTecnicoNetworkDTO? = null,
@@ -69,6 +70,58 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
             }
+        }
+    }
+
+    fun selectConceptById(conceptId: Long) {
+        val state = _uiState.value
+        var foundConcept: ConceptoTecnicoNetworkDTO? = null
+
+        // Primero busca en los conceptos formativos
+        foundConcept = state.conceptosFormativos.find { it.formativeCId == conceptId }?.let {
+            // Mapea el formativo a un DTO técnico genérico para la pantalla de detalle
+            ConceptoTecnicoNetworkDTO(
+                technicalId = it.formativeCId,
+                technicalName = it.formativeName,
+                technicalDescription = it.formativeDescription,
+                isFavorite = it.isFavorite,
+                imageUrl = it.imageUrl
+            )
+        }
+
+        // Si no lo encontró, busca en los conceptos técnicos dentro de cada familia
+        if (foundConcept == null) {
+            for (family in state.families) {
+                val concept = family.conceptosTecnicos.find { it.technicalId == conceptId }
+                if (concept != null) {
+                    foundConcept = concept
+                    break
+                }
+            }
+        }
+
+        _uiState.update { it.copy(selectedConcept = foundConcept) }
+    }
+
+
+    fun updateUserFavorites(userId: Int) {
+        refreshAllData(userId)
+    }
+
+    fun clearUserFavorites() {
+        _uiState.update { currentState ->
+            val formativosLimpios = currentState.conceptosFormativos.map { it.copy(isFavorite = false) }
+
+            val familiasLimpias = currentState.families.map { family ->
+                family.copy(
+                    conceptosTecnicos = family.conceptosTecnicos.map { it.copy(isFavorite = false) }
+                )
+            }
+
+            currentState.copy(
+                conceptosFormativos = formativosLimpios,
+                families = familiasLimpias
+            )
         }
     }
 
