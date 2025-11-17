@@ -2,6 +2,7 @@ package com.example.restaurapp.ui.screens.addFamilyScreeen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.ConceptViewModel
 
 @Composable
@@ -9,11 +10,13 @@ fun AddFamilyScreenCompact(
     modifier: Modifier = Modifier,
     vm: ConceptViewModel,
     onNavigateBack: () -> Unit,
+    authVm: AuthViewModel
 ) {
     AddFamilyScreenBase(
         modifier = modifier,
         vm = vm,
         onNavigateBack = onNavigateBack,
-        formWidth = 1.0f
+        formWidth = 1.0f,
+        authVm = authVm
     )
 }

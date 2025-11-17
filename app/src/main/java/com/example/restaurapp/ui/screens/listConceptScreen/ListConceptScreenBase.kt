@@ -168,8 +168,8 @@ fun ListConceptScreenBase(
 
 @Composable
 fun ConceptListItem(
-    conceptName: String,
-    conceptDescription: String,
+    conceptName: String?,
+    conceptDescription: String?,
     isFavorite: Boolean,
     onFavoriteClick: () -> Unit,
     onClick: () -> Unit
@@ -185,16 +185,16 @@ fun ConceptListItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = conceptName,
+                    text = conceptName ?: "Concepto sin nombre", // <-- 3. USA UN VALOR POR DEFECTO
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = conceptDescription,
+                    text = conceptDescription ?: "Sin descripción.", // <-- 4. USA UN VALOR POR DEFECTO
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2 // Evita que descripciones muy largas rompan el layout
+                    maxLines = 2
                 )
             }
             IconButton(onClick = onFavoriteClick) {
@@ -223,11 +223,19 @@ fun FamilyListItem(family: FamiliaNetworkDTO, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                // Usa los campos del DTO
-                Text(family.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    text = family.name ?: "Familia sin nombre",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
                 if (!family.description.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(family.description, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+                    Text(
+                        text = family.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 2
+                    )
                 }
             }
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Ver detalles")

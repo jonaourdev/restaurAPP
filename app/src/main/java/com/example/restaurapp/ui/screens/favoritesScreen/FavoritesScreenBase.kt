@@ -1,3 +1,5 @@
+// Contenido 100% corregido y actualizado para FavoritesScreenBase.kt
+
 package com.example.restaurapp.ui.screens.favoritesScreen
 
 import androidx.compose.foundation.layout.*
@@ -12,25 +14,47 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.restaurapp.model.local.concepts.ConceptWithFavorite // Importa el nuevo modelo
 import com.example.restaurapp.ui.screens.listConceptScreen.ConceptListItem
-import com.example.restaurapp.viewmodel.AuthViewModel // Importa el AuthViewModel
+import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.ConceptViewModel
+
+private data class ConceptoFavorito(
+    val id: Long,
+    val name: String,
+    val description: String,
+    val isFavorite: Boolean
+)
 
 @Composable
 fun FavoritesScreenBase(
     modifier: Modifier = Modifier,
     vm: ConceptViewModel,
-    authVm: AuthViewModel, // <-- AÑADIDO: Necesitamos el AuthViewModel para el userId
+    authVm: AuthViewModel,
     onNavigateToConceptDetail: (conceptId: Long) -> Unit,
     gridCells: GridCells
 ) {
     val uiState by vm.uiState.collectAsState()
-    val authState by authVm.uiState.collectAsState() // Obtenemos el estado de autenticación
+    val authState by authVm.uiState.collectAsState()
 
-    // La lista 'uiState.concepts' ahora es de tipo List<ConceptWithFavorite>
-    // Filtramos para obtener SÓLO los que tienen isFavorite = true
-    val favoriteConcepts = uiState.concepts.filter { it.isFavorite }
+    // 1. Mapeamos todos los conceptos a nuestra nueva clase de datos unificada
+    val todosLosConceptos = uiState.conceptosFormativos.map { formativo ->
+        ConceptoFavorito(
+            id = formativo.formativeCId,
+            name = formativo.formativeName,
+            description = formativo.formativeDescription,
+            isFavorite = formativo.isFavorite
+        )
+    } + uiState.families.flatMap { it.conceptosTecnicos }.map { tecnico ->
+        ConceptoFavorito(
+            id = tecnico.technicalId,
+            name = tecnico.technicalName,
+            description = tecnico.technicalDescription,
+            isFavorite = tecnico.isFavorite
+        )
+    }
+
+    // 2. FILTRAMOS SOLO LOS QUE SON FAVORITOS
+    val favoriteConcepts = todosLosConceptos.filter { it.isFavorite }
 
     Box(
         modifier = modifier.fillMaxSize(),
@@ -48,7 +72,6 @@ fun FavoritesScreenBase(
                     modifier = Modifier.padding(16.dp)
                 )
             }
-            // Mostramos un mensaje si la lista de favoritos está vacía
             favoriteConcepts.isEmpty() -> {
                 Text(
                     text = "Aún no has añadido ningún concepto a favoritos.",
@@ -57,7 +80,6 @@ fun FavoritesScreenBase(
                     modifier = Modifier.padding(16.dp)
                 )
             }
-            // Mostramos la lista de favoritos si no está vacía
             else -> {
                 LazyVerticalGrid(
                     columns = gridCells,
@@ -68,20 +90,18 @@ fun FavoritesScreenBase(
                 ) {
                     items(
                         items = favoriteConcepts,
-                        key = { it.concept.id } // La key es el id del concepto anidado
-                    ) { conceptWithFavorite -> // El item ahora es de tipo ConceptWithFavorite
-                        // Reutilizamos el mismo ConceptListItem
+                        key = { it.id }
+                    ) { concepto -> // 'concepto' es ahora de tipo 'ConceptoFavorito'
+                        // Ahora Kotlin entiende perfectamente qué es 'concepto' y sus propiedades
                         ConceptListItem(
-                            conceptWithFavorite = conceptWithFavorite, // Pasamos el objeto completo
+                            conceptName = concepto.name,
+                            conceptDescription = concepto.description,
+                            isFavorite = concepto.isFavorite,
+                            onClick = { onNavigateToConceptDetail(concepto.id) },
                             onFavoriteClick = {
-                                // Solo permite la acción si hay un usuario logueado
                                 authState.currentUser?.id?.let { userId ->
-                                    vm.toggleFavorite(conceptWithFavorite, userId)
+                                    vm.toggleFavorite(userId, concepto.id, concepto.isFavorite)
                                 }
-                            },
-                            onClick = {
-                                // La navegación no cambia, solo necesita el ID del concepto
-                                onNavigateToConceptDetail(conceptWithFavorite.concept.id)
                             }
                         )
                     }

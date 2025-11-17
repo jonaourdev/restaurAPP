@@ -59,7 +59,7 @@ class AuthRepository {
                     Log.d("AuthRepository", "Login exitoso para: ${usuarioRespuesta.correo}")
                     // Mapeamos el DTO de respuesta a nuestra entidad local (UserEntity)
                     return UserEntity(
-                        id = usuarioRespuesta.idUsuario, // Usamos el id del DTO
+                        id = usuarioRespuesta.id, // Usamos el id del DTO
                         nombres = usuarioRespuesta.nombres,
                         apellidos = usuarioRespuesta.apellidos,
                         correo = usuarioRespuesta.correo,

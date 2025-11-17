@@ -1,17 +1,13 @@
+// Contenido 100% corregido para AppNavigation.kt
+
 package com.example.restaurapp.ui.screens
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -22,39 +18,33 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.restaurapp.model.local.AppDatabase
-import com.example.restaurapp.model.repository.AuthRepository
-import com.example.restaurapp.model.repository.ConceptRepository
-import com.example.restaurapp.model.repository.UserRepository
+import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.navigation.Screen
 import com.example.restaurapp.ui.RegisterScreen
-import com.example.restaurapp.ui.screens.homeScreen.HomeScreen
-import com.example.restaurapp.ui.screens.listConceptScreen.ListConceptScreen
-import com.example.restaurapp.ui.screens.loginScreen.LoginScreen
-import com.example.restaurapp.ui.screens.profileScreen.ProfileScreen
-import com.example.restaurapp.viewmodel.AuthViewModel
-import com.example.restaurapp.viewmodel.AuthViewModelFactory
-import com.example.restaurapp.viewmodel.ConceptViewModel
-import com.example.restaurapp.viewmodel.ConceptViewModelFactory
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.ui.screens.addConceptScreen.AddConceptScreen
 import com.example.restaurapp.ui.screens.addFamilyScreeen.AddFamilyScreen
 import com.example.restaurapp.ui.screens.detailConceptScreen.DetailConceptScreen
 import com.example.restaurapp.ui.screens.editProfileScreen.EditProfileScreen
 import com.example.restaurapp.ui.screens.familyDetailScreen.FamilyDetailScreen
 import com.example.restaurapp.ui.screens.favoritesScreen.FavoriteScreen
+import com.example.restaurapp.ui.screens.homeScreen.HomeScreen
+import com.example.restaurapp.ui.screens.listConceptScreen.ListConceptScreen
+import com.example.restaurapp.ui.screens.loginScreen.LoginScreen
+import com.example.restaurapp.ui.screens.profileScreen.ProfileScreen
+import com.example.restaurapp.viewmodel.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation(windowSizeClass: WindowSizeClass) {
     val navController = rememberNavController()
     val isExpandedScreen = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
 
+    // La vista para pantallas expandidas (tablets en horizontal)
     if (isExpandedScreen) {
         Row {
             PermanentNavigationDrawer(
-                drawerContent = { /* Contenido del drawer */ }
+                drawerContent = { /* Aquí podrías poner un menú lateral permanente */ }
             ) {
                 AppNavHost(navController = navController, windowSizeClass = windowSizeClass)
             }
@@ -67,33 +57,26 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
 @Composable
 fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClass) {
 
+    // --- INICIALIZACIÓN CORRECTA DE VIEWMODELS ---
+    // Usamos las Factories que ya creamos para instanciar los ViewModels.
+    // La función `viewModel()` se encarga de gestionar el ciclo de vida,
+    // sobreviviendo a cambios de configuración y recomposiciones.
+    // Esta es la forma canónica y segura de hacerlo.
     val context = LocalContext.current
-    val db = remember { AppDatabase.get(context) }
-
-    // Se crean los repositorios y factories una sola vez
-    val authRepository = remember { AuthRepository() }
-    val userRepository = remember { UserRepository(db.userDao()) }
-    val conceptRepository = remember { ConceptRepository() }
-
-    val authFactory = remember { AuthViewModelFactory(authRepository, userRepository) }
-    val conceptFactory = remember { ConceptViewModelFactory(conceptRepository) }
-
-    // --- VIEWMODELS CENTRALIZADOS ---
-    val authVm: AuthViewModel = viewModel(factory = authFactory)
-    val conceptVm: ConceptViewModel = viewModel(factory = conceptFactory)
+    val authVm: AuthViewModel = viewModel(factory = AuthViewModelFactory.getInstance(context))
+    val conceptVm: ConceptViewModel = viewModel(factory = ConceptViewModelFactory.getInstance())
 
     val authState by authVm.uiState.collectAsState()
 
-    // --- EFECTO DE CARGA Y LIMPIEZA DE DATOS (VERSIÓN FINAL) ---
+    // Este efecto se encarga de refrescar los conceptos cuando el usuario cambia.
     LaunchedEffect(key1 = authState.currentUser) {
         val user = authState.currentUser
         if (user != null) {
-            // Si hay un usuario logueado, actualiza la lista con sus favoritos.
-            conceptVm.updateUserFavorites(user.id)
+            // Usuario logueado: recarga los conceptos con sus favoritos.
+            conceptVm.refreshAllData(user.id)
         } else {
-            // Si no hay usuario (logout o invitado), limpia solo los favoritos,
-            // manteniendo la lista pública de conceptos.
-            conceptVm.clearUserFavorites()
+            // Invitado o logout: recarga los conceptos sin información de favoritos.
+            conceptVm.refreshAllData(0)
         }
     }
 
@@ -107,7 +90,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             val scope = rememberCoroutineScope()
 
             if (authState.success) {
-                LaunchedEffect(authState.success) {
+                LaunchedEffect(Unit) {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
@@ -135,7 +118,8 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         // --- Register Screen ---
         composable(route = Screen.Register.route) {
             if (authState.success) {
-                LaunchedEffect(authState.success) {
+                LaunchedEffect(Unit) {
+                    // Si el registro es exitoso, vuelve a Login para que el usuario inicie sesión.
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
@@ -177,7 +161,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-        // -- Favorites --
+        // --- Favorites ---
         composable(route = Screen.Favorites.route) {
             FavoriteScreen(
                 windowSizeClass = windowSizeClass,
@@ -190,7 +174,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         // --- List Screen ---
         composable(
             route = Screen.ListConcept.route + "?tipo={tipo}",
-            arguments = listOf(navArgument("tipo"){
+            arguments = listOf(navArgument("tipo") {
                 type = NavType.StringType
                 defaultValue = ConceptType.FORMATIVO
             })
@@ -204,16 +188,17 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 authVm = authVm,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToAddConcept = {
-                    if (tipo == ConceptType.TECNICO) {
-                        navController.navigate(Screen.AddFamily.route)
+                    val route = if (tipo == ConceptType.TECNICO) {
+                        Screen.AddFamily.route
                     } else {
-                        navController.navigate(Screen.AddConcept.route + "?tipo=$tipo")
+                        Screen.AddConcept.route + "?tipo=$tipo"
                     }
+                    navController.navigate(route)
                 },
                 onNavigateToFamily = { familyId ->
                     navController.navigate(Screen.DetailFamily.route + "/$familyId")
                 },
-                onNavigateToConceptDetail = { conceptId: Long ->
+                onNavigateToConceptDetail = { conceptId ->
                     navController.navigate(Screen.DetailConcept.route + "/$conceptId")
                 }
             )
@@ -235,9 +220,24 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 onNavigateToAddConcept = { fId ->
                     navController.navigate(Screen.AddConcept.route + "?tipo=${ConceptType.TECNICO}&familyId=$fId")
                 },
-                onNavigateToConceptDetail = { conceptId: Long->
+                onNavigateToConceptDetail = { conceptId ->
                     navController.navigate(Screen.DetailConcept.route + "/$conceptId")
                 }
+            )
+        }
+
+        // --- Detail Concept Screen ---
+        composable(
+            route = Screen.DetailConcept.route + "/{conceptId}",
+            arguments = listOf(navArgument("conceptId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val conceptId = backStackEntry.arguments?.getLong("conceptId") ?: 0
+            DetailConceptScreen(
+                windowSizeClass = windowSizeClass,
+                conceptId = conceptId,
+                vm = conceptVm,
+                authVm = authVm,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -246,7 +246,8 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             AddFamilyScreen(
                 windowSizeClass = windowSizeClass,
                 vm = conceptVm,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                authVm = authVm
             )
         }
 
@@ -254,11 +255,11 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
         composable(
             route = Screen.AddConcept.route + "?tipo={tipo}&familyId={familyId}",
             arguments = listOf(
-                navArgument("tipo"){
+                navArgument("tipo") {
                     type = NavType.StringType
                     defaultValue = ConceptType.FORMATIVO
                 },
-                navArgument("familyId"){
+                navArgument("familyId") {
                     type = NavType.LongType
                     defaultValue = -1L
                 }
@@ -267,47 +268,36 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             val tipo = backStackEntry.arguments?.getString("tipo") ?: ConceptType.FORMATIVO
             val familyId = backStackEntry.arguments?.getLong("familyId") ?: -1L
 
-            LaunchedEffect(key1 = tipo, key2 = familyId) {
+            // Configura el ViewModel con el tipo y familyId antes de mostrar la pantalla.
+            LaunchedEffect(tipo, familyId) {
                 conceptVm.onConceptTypeChange(tipo)
-                if (familyId != -1L) {
-                    conceptVm.setCurrentFamilyId(familyId)
-                } else {
-                    conceptVm.setCurrentFamilyId(null)
-                }
+                conceptVm.setCurrentFamilyId(if (familyId != -1L) familyId else null)
             }
 
+            // Limpia el familyId cuando se sale de la pantalla para evitar errores.
             DisposableEffect(Unit) {
-                onDispose { conceptVm.setCurrentFamilyId(null) }
+                onDispose {
+                    conceptVm.setCurrentFamilyId(null)
+                }
             }
 
             AddConceptScreen(
                 windowSizeClass = windowSizeClass,
                 vm = conceptVm,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                authVm = authVm
             )
         }
 
         //--- Edit Profile Screen ---
         composable(route = Screen.EditProfile.route) {
+            // Carga los datos del usuario en el formulario al entrar a la pantalla.
+            LaunchedEffect(Unit) {
+                authVm.cargarDatosParaEdicion()
+            }
             EditProfileScreen(
                 windowSizeClass = windowSizeClass,
                 vm = authVm,
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        // --- Detail Concept Screen ---
-        composable(
-            route = Screen.DetailConcept.route + "/{conceptId}",
-            arguments = listOf(navArgument("conceptId") {type = NavType.LongType})
-        ) { backStackEntry ->
-            val conceptId = backStackEntry.arguments?.getLong("conceptId") ?: 0
-
-            DetailConceptScreen(
-                windowSizeClass = windowSizeClass,
-                conceptId = conceptId,
-                vm = conceptVm,
-                authVm = authVm,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

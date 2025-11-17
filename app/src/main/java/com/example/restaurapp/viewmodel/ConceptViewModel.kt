@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.model.network.*
 import com.example.restaurapp.model.repository.ConceptRepository
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,22 +55,27 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val familiasJob = launch {
-                    val familias = conceptRepository.getAllFamilies(userId)
-                    _uiState.update { it.copy(families = familias) }
+                // 1. Inicia ambas llamadas en paralelo con 'async'
+                val familiasDeferred = async { conceptRepository.getAllFamilies(userId) }
+                val formativosDeferred = async { conceptRepository.getConceptosFormativos(userId) }
+
+                // 2. Espera a que ambas terminen y recoge los resultados
+                val nuevasFamilias = familiasDeferred.await()
+                val nuevosFormativos = formativosDeferred.await()
+
+                // 3. Realiza UNA SOLA actualización del estado con TODOS los datos nuevos
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        families = nuevasFamilias,
+                        conceptosFormativos = nuevosFormativos,
+                        isLoading = false // Apagamos el loading aquí
+                    )
                 }
-                val formativosJob = launch {
-                    val formativos = conceptRepository.getConceptosFormativos(userId)
-                    _uiState.update { it.copy(conceptosFormativos = formativos) }
-                }
-                familiasJob.join()
-                formativosJob.join()
 
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Error al cargar datos: ${e.message}") }
-            } finally {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(error = "Error al cargar datos: ${e.message}", isLoading = false) }
             }
+            // El 'finally' ya no es necesario porque controlamos 'isLoading' en los bloques try/catch
         }
     }
 
