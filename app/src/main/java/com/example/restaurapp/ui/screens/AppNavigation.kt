@@ -54,7 +54,7 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
     if (isExpandedScreen) {
         Row {
             PermanentNavigationDrawer(
-                drawerContent = { /* Contenido del drawer */ }
+                drawerContent = { /* Contenido del drawer (si aplica) */ }
             ) {
                 AppNavHost(navController = navController, windowSizeClass = windowSizeClass)
             }
@@ -68,40 +68,52 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
 fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClass) {
 
     val context = LocalContext.current
+    // La DB local se mantiene, ya que 'UserRepository' aún la usa para perfiles
     val db = remember { AppDatabase.get(context) }
 
-    // Se crean los repositorios y factories una sola vez
-    val authRepository = remember { AuthRepository(db.userDao()) }
-    val userRepository = remember { UserRepository(db.userDao()) }
-    val conceptRepository = remember { ConceptRepository(db.conceptDao(), db.familyDao()) }
+    // --- 1. CREACIÓN DE REPOSITORIOS ACTUALIZADA ---
 
+    // AuthRepository ahora es 100% de red, constructor vacío
+    val authRepository = remember { AuthRepository() }
+
+    // UserRepository aún usa Room para editar perfiles
+    val userRepository = remember { UserRepository(db.userDao()) }
+
+    // ConceptRepository ahora es 100% de red, constructor vacío
+    val conceptRepository = remember { ConceptRepository() }
+
+
+    // --- 2. CREACIÓN DE FACTORIES (Sin cambios) ---
+    // Los constructores de los Factory coinciden con lo que les pasamos
     val authFactory = remember { AuthViewModelFactory(authRepository, userRepository) }
     val conceptFactory = remember { ConceptViewModelFactory(conceptRepository) }
 
-    // --- VIEWMODELS CENTRALIZADOS ---
+
+    // --- 3. VIEWMODELS CENTRALIZADOS (Sin cambios) ---
     val authVm: AuthViewModel = viewModel(factory = authFactory)
     val conceptVm: ConceptViewModel = viewModel(factory = conceptFactory)
 
     val authState by authVm.uiState.collectAsState()
 
-    // --- EFECTO DE CARGA Y LIMPIEZA DE DATOS (VERSIÓN FINAL) ---
+
+    // --- 4. EFECTO DE CARGA DE DATOS (¡CRÍTICO!) ---
+    // Se ejecuta cuando el estado de 'currentUser' cambia (login/logout)
     LaunchedEffect(key1 = authState.currentUser) {
-        val user = authState.currentUser
-        if (user != null) {
-            // Si hay un usuario logueado, actualiza la lista con sus favoritos.
-            conceptVm.updateUserFavorites(user.id)
-        } else {
-            // Si no hay usuario (logout o invitado), limpia solo los favoritos,
-            // manteniendo la lista pública de conceptos.
-            conceptVm.clearUserFavorites()
-        }
+        // Si hay un usuario logueado, usa su ID.
+        // Si es invitado (null), usa el ID 0.
+        val userId = authState.currentUser?.id ?: 0
+
+        // Llama al nuevo método del ViewModel que carga todo desde la RED
+        // pasando el ID del usuario para calcular los favoritos.
+        conceptVm.refreshAllData(userId)
     }
 
     NavHost(
         navController = navController,
         startDestination = Screen.Login.route
     ) {
-        // --- Login Screen ---
+
+        // --- Login Screen (Sin cambios) ---
         composable(route = Screen.Login.route) {
             var isGuestLoading by remember { mutableStateOf(false) }
             val scope = rememberCoroutineScope()
@@ -132,7 +144,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-        // --- Register Screen ---
+        // --- Register Screen (Sin cambios) ---
         composable(route = Screen.Register.route) {
             if (authState.success) {
                 LaunchedEffect(authState.success) {
@@ -149,7 +161,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-        // --- Home ---
+        // --- Home (Sin cambios) ---
         composable(route = Screen.Home.route) {
             HomeScreen(
                 windowSizeClass = windowSizeClass,
@@ -158,7 +170,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-        // --- Profile Screen ---
+        // --- Profile Screen (Sin cambios) ---
         composable(route = Screen.Profile.route) {
             ProfileScreen(
                 windowSizeClass = windowSizeClass,
@@ -177,7 +189,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-        // -- Favorites --
+        // -- Favorites (Sin cambios) --
         composable(route = Screen.Favorites.route) {
             FavoriteScreen(
                 windowSizeClass = windowSizeClass,
@@ -187,7 +199,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-        // --- List Screen ---
+        // --- List Screen (Sin cambios) ---
         composable(
             route = Screen.ListConcept.route + "?tipo={tipo}",
             arguments = listOf(navArgument("tipo"){
@@ -219,7 +231,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-        // --- Detail Family Screen ---
+        // --- Detail Family Screen (Sin cambios) ---
         composable(
             route = Screen.DetailFamily.route + "/{familyId}",
             arguments = listOf(navArgument("familyId") { type = NavType.LongType })
@@ -241,16 +253,17 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-        // --- Add Family Screen ---
+        // --- Add Family Screen (¡CAMBIO!) ---
         composable(route = Screen.AddFamily.route) {
             AddFamilyScreen(
                 windowSizeClass = windowSizeClass,
                 vm = conceptVm,
+                authVm = authVm, // <-- 5. AÑADIMOS authVm
                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
-        // --- Add Concept Screen ---
+        // --- Add Concept Screen (¡CAMBIO!) ---
         composable(
             route = Screen.AddConcept.route + "?tipo={tipo}&familyId={familyId}",
             arguments = listOf(
@@ -283,11 +296,12 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             AddConceptScreen(
                 windowSizeClass = windowSizeClass,
                 vm = conceptVm,
+                authVm = authVm, // <-- 6. AÑADIMOS authVm
                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
-        //--- Edit Profile Screen ---
+        //--- Edit Profile Screen (Sin cambios) ---
         composable(route = Screen.EditProfile.route) {
             EditProfileScreen(
                 windowSizeClass = windowSizeClass,
@@ -296,7 +310,7 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             )
         }
 
-        // --- Detail Concept Screen ---
+        // --- Detail Concept Screen (Sin cambios) ---
         composable(
             route = Screen.DetailConcept.route + "/{conceptId}",
             arguments = listOf(navArgument("conceptId") {type = NavType.LongType})

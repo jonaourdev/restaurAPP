@@ -25,13 +25,8 @@ open class ConceptRepository(
     // Obtenemos la instancia del servicio de API (Retrofit)
     private val apiService: ApiService = RetrofitClient.apiService
 
-    // --- MÉTODOS 'GET' (Leen de la Red) ---
 
-    /**
-     * Obtiene la lista completa de familias (y sus conceptos técnicos anidados)
-     * desde el endpoint GET /api/v1/familias.
-     * Pasa el 'userId' para que el backend nos diga qué conceptos son favoritos.
-     */
+
     suspend fun getAllFamilies(userId: Int): List<FamiliaNetworkDTO> {
         Log.d("ConceptRepository", "Obteniendo familias para userId: $userId")
         try {
@@ -43,11 +38,7 @@ open class ConceptRepository(
         }
     }
 
-    /**
-     * Obtiene la lista completa de conceptos formativos
-     * desde el endpoint GET /api/v1/conceptos-formativos.
-     * Pasa el 'userId' para los favoritos.
-     */
+
     suspend fun getConceptosFormativos(userId: Int): List<ConceptoFormativoNetworkDTO> {
         Log.d("ConceptRepository", "Obteniendo formativos para userId: $userId")
         try {
@@ -57,8 +48,6 @@ open class ConceptRepository(
             throw Exception("Error de red al obtener formativos: ${e.message}")
         }
     }
-
-
 
     /**
      * Envía una nueva familia al endpoint POST /api/v1/familias.
