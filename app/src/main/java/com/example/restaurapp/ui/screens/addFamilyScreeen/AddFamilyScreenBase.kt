@@ -84,9 +84,10 @@ fun AddFamilyScreenBase(
                     uiState = uiState,
                     onNameChange = vm::onFamilyNameChange,
                     onDescriptionChange = vm::onFamilyDescriptionChange,
+                    onComponentsChange = vm::onFamilyComponentsChange, // 🚩 AÑADIDO: Conexión al nuevo setter
                     onSaveClick = {
                         authState.currentUser?.id?.let { userId ->
-                            vm.addFamily(userId) // o vm.addFamily(userId)
+                            vm.addFamily(userId)
                         }
                     }
                 )
@@ -113,10 +114,11 @@ fun AddFamilyScreenBase(
 
 @Composable
 fun FamilyForm(
-  uiState: ConceptUiState,
-  onNameChange: (String) -> Unit,
-  onDescriptionChange: (String) -> Unit,
-  onSaveClick: () -> Unit
+    uiState: ConceptUiState,
+    onNameChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    onComponentsChange: (String) -> Unit, // 🚩 AÑADIDO: Nuevo parámetro
+    onSaveClick: () -> Unit
 ){
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -153,13 +155,26 @@ fun FamilyForm(
             enabled = !uiState.isLoading
         )
 
+        // 🚩 AÑADIDO: Campo para los Componentes de la familia
+        OutlinedTextField(
+            value = uiState.familyComponents,
+            onValueChange = onComponentsChange,
+            label = { Text("Componentes (Requerido)") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp),
+            isError = uiState.error != null,
+            enabled = !uiState.isLoading
+        )
+
         //Botón para guardar
         Button(
             onClick = onSaveClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            enabled = !uiState.isLoading && uiState.familyName.isNotBlank()
+            // 🚩 VALIDACIÓN CORREGIDA: Habilitado solo si NOMBRE y COMPONENTES NO están vacíos
+            enabled = !uiState.isLoading && uiState.familyName.isNotBlank() && uiState.familyComponents.isNotBlank()
         ) {
             Text(
                 text = if (uiState.isLoading) "Guardando..." else "Guardar familia",

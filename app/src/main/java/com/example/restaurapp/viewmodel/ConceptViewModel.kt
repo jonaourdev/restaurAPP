@@ -24,6 +24,7 @@ data class ConceptUiState(
 
     val familyName: String = "",
     val familyDescription: String = "",
+    val familyComponents: String = "", // 🚩 CAMBIO 1: Estado para el nuevo campo
     val currentFamilyId: Long? = null,
 
     val isLoading: Boolean = false,
@@ -159,17 +160,20 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
 
     fun addFamily(currentUserId: Int) = viewModelScope.launch {
         val state = _uiState.value
-        if (state.familyName.isBlank()) {
-            _uiState.update { it.copy(error = "El nombre no puede estar vacío.") }
+        // Validación mejorada para incluir el nuevo campo
+        if (state.familyName.isBlank() || state.familyComponents.isBlank()) {
+            _uiState.update { it.copy(error = "El nombre y los componentes no pueden estar vacíos.") }
             return@launch
         }
         _uiState.update { it.copy(isLoading = true, error = null) }
         try {
-            conceptRepository.addFamily(state.familyName, state.familyDescription, currentUserId)
+            // 🚩 CAMBIO 3: Pasar el nuevo campo familyComponents al repositorio (requiere cambiar la firma del repositorio)
+            conceptRepository.addFamily(state.familyName, state.familyDescription, state.familyComponents, currentUserId)
             _uiState.update { it.copy(
                 successMessage = "Familia creada",
                 familyName = "",
-                familyDescription = ""
+                familyDescription = "",
+                familyComponents = "" // 🚩 Limpiar campo
             )}
             refreshAllData(currentUserId)
         } catch (e: Exception) {
@@ -217,12 +221,16 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         }
     }
 
-    // --- Setters (Sin cambios) ---
+    // --- Setters ---
     fun onConceptNameChange(name: String) { _uiState.update { it.copy(nombreConcepto = name, error = null) } }
     fun onDescriptionChange(description: String) { _uiState.update { it.copy(descripcion = description, error = null) } }
     fun onConceptTypeChange(tipo: String){ _uiState.update { it.copy(tipoSeleccionado = tipo) } }
     fun onFamilyNameChange(name: String) { _uiState.update { it.copy(familyName = name, error = null) } }
     fun onFamilyDescriptionChange(description: String) { _uiState.update { it.copy(familyDescription = description, error = null) } }
+
+    // 🚩 CAMBIO 2: Nuevo setter para el campo familyComponents
+    fun onFamilyComponentsChange(components: String) { _uiState.update { it.copy(familyComponents = components, error = null) } }
+
     fun setCurrentFamilyId(id: Long?) { _uiState.update { it.copy(currentFamilyId = id) } }
     fun clearMessages() { _uiState.update { it.copy(error = null, successMessage = null) } }
 }

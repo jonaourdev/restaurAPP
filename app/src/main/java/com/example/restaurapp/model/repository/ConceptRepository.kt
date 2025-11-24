@@ -1,13 +1,11 @@
 package com.example.restaurapp.model.repository
 
 import android.util.Log
-import com.example.restaurapp.model.local.concepts.ConceptType // Aún lo usamos para la lógica de tipo
 import com.example.restaurapp.model.network.ApiService
 import com.example.restaurapp.model.network.ConceptoFormativoCreateDTO
 import com.example.restaurapp.model.network.ConceptoTecnicoCreateDTO
 import com.example.restaurapp.model.network.*
 import com.example.restaurapp.model.network.RetrofitClient
-import kotlinx.coroutines.flow.Flow
 
 /**
  * Repositorio de Conceptos (Versión 100% Online).
@@ -61,11 +59,11 @@ open class ConceptRepository(
     /**
      * Envía una nueva familia al endpoint POST /api/v1/familias.
      */
-    suspend fun addFamily(familyName: String, familyDesc: String, userId: Int) {
+    suspend fun addFamily(familyName: String, familyDesc: String,familyComponents: String, userId: Int) {
         val dto = FamiliaCreateDTO(
             familyName = familyName.trim(),
             familyDescription = familyDesc.trim(),
-            familyComponents = "", // Tu backend lo pide, lo enviamos vacío
+            familyComponents = familyComponents.trim(),
             usuarioCreadorId = userId
         )
 
