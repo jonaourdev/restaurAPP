@@ -7,16 +7,16 @@ data class ConceptoTecnicoNetworkDTO(
     @SerializedName("technicalId") val technicalId: Long,
     @SerializedName("technicalName") val technicalName: String,
     @SerializedName("technicalDescription") val technicalDescription: String,
-    @SerializedName("isFavorite") var isFavorite: Boolean,
-    @SerializedName("imageUrl") val imageUrl: String?
+    @SerializedName("isFavorite") var isFavorite: Boolean = false,
+    @SerializedName("imageUrl") val imageUrl: String? = null
 )
 
 data class ConceptoFormativoNetworkDTO(
     @SerializedName("formativeCId") val formativeCId: Long,
-    @SerializedName("formativeName") val formativeName: String,
-    @SerializedName("formativeDescription") val formativeDescription: String,
-    @SerializedName("isFavorite") var isFavorite: Boolean,
-    @SerializedName("imageUrl") val imageUrl: String?
+    @SerializedName("formative_name") val formativeName: String,
+    @SerializedName("formative_description") val formativeDescription: String,
+    @SerializedName("isFavorite") var isFavorite: Boolean = false,
+    @SerializedName("imageUrl") val imageUrl: String? = null
 )
 
 
@@ -24,16 +24,24 @@ data class ConceptoFormativoNetworkDTO(
 data class ConceptoTecnicoCreateDTO(
     @SerializedName("technicalName") val technicalName: String,
     @SerializedName("technicalDescription") val technicalDescription: String,
-    @SerializedName("usuarioCreador") val usuarioCreador: IdWrapper,
-    @SerializedName("familia") val familia: IdWrapper
+    @SerializedName("usuarioCreador") val usuarioCreador: UsuarioCreateRef,
+    @SerializedName("familia") val familia: FamiliaCreateRef
 )
 
 data class ConceptoFormativoCreateDTO(
     @SerializedName("formativeName") val formativeName: String,
     @SerializedName("formativeDescription") val formativeDescription: String,
-    @SerializedName("usuarioCreador") val usuarioCreador: IdWrapper
+    @SerializedName("usuarioCreador") val usuarioCreador: UsuarioCreateRef
 )
 
 data class IdWrapper(
     @SerializedName(value = "idUsuario", alternate = ["familyId"]) val id: Number
+)
+
+data class UsuarioCreateRef(
+    @SerializedName("idUsuario") val idUsuario: Long
+)
+
+data class FamiliaCreateRef(
+    @SerializedName("familyId") val familyId: Long
 )

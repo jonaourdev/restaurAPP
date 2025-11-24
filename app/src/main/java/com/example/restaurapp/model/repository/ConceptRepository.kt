@@ -1,13 +1,11 @@
 package com.example.restaurapp.model.repository
 
 import android.util.Log
-import com.example.restaurapp.model.local.concepts.ConceptType // Aún lo usamos para la lógica de tipo
 import com.example.restaurapp.model.network.ApiService
 import com.example.restaurapp.model.network.ConceptoFormativoCreateDTO
 import com.example.restaurapp.model.network.ConceptoTecnicoCreateDTO
 import com.example.restaurapp.model.network.*
 import com.example.restaurapp.model.network.RetrofitClient
-import kotlinx.coroutines.flow.Flow
 
 /**
  * Repositorio de Conceptos (Versión 100% Online).
@@ -61,11 +59,11 @@ open class ConceptRepository(
     /**
      * Envía una nueva familia al endpoint POST /api/v1/familias.
      */
-    suspend fun addFamily(familyName: String, familyDesc: String, userId: Int) {
+    suspend fun addFamily(familyName: String, familyDesc: String,familyComponents: String, userId: Int) {
         val dto = FamiliaCreateDTO(
             familyName = familyName.trim(),
             familyDescription = familyDesc.trim(),
-            familyComponents = "", // Tu backend lo pide, lo enviamos vacío
+            familyComponents = familyComponents.trim(),
             usuarioCreadorId = userId
         )
 
@@ -86,11 +84,11 @@ open class ConceptRepository(
     /**
      * Envía un nuevo concepto formativo al endpoint POST /api/v1/conceptos-formativos.
      */
-    suspend fun addConceptoFormativo(nombre: String, desc: String, userId: Int) {
+    suspend fun addConceptoFormativo(nombre: String, desc: String, userId: Long) {
         val dto = ConceptoFormativoCreateDTO(
             formativeName = nombre.trim(),
             formativeDescription = desc.trim(),
-            usuarioCreador = IdWrapper(id = userId)
+            usuarioCreador = UsuarioCreateRef(idUsuario = userId)   //CAMBIAR IDWRAPER
         )
 
         Log.d("ConceptRepository", "Creando formativo: $nombre")
@@ -108,12 +106,12 @@ open class ConceptRepository(
     /**
      * Envía un nuevo concepto técnico al endpoint POST /api/v1/conceptos-tecnicos.
      */
-    suspend fun addConceptoTecnico(nombre: String, desc: String, userId: Int, familiaId: Long) {
+    suspend fun addConceptoTecnico(nombre: String, desc: String, userId: Long, familiaId: Long) {
         val dto = ConceptoTecnicoCreateDTO(
             technicalName = nombre.trim(),
             technicalDescription = desc.trim(),
-            usuarioCreador = IdWrapper(id = userId),
-            familia = IdWrapper(id = familiaId)
+            usuarioCreador = UsuarioCreateRef(idUsuario = userId),    //CAMBIAR IDWRAPER
+            familia = FamiliaCreateRef(familyId = familiaId) //CAMBIAR IDWRAPER
         )
 
         Log.d("ConceptRepository", "Creando técnico: $nombre para familia $familiaId")

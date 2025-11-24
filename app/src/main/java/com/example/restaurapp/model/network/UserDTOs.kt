@@ -16,10 +16,14 @@ data class UserResponseDTO(
     @SerializedName("nombres") val nombres: String,
     @SerializedName("apellidos") val apellidos: String,
     @SerializedName("correo") val correo: String,
-    @SerializedName("contrasenna") val contrasenna: String,
-    @SerializedName("rol") val rol: RolDTO
+    @SerializedName("rol") val rol: RolDTO?
 )
 
 data class RolDTO(
     @SerializedName("nombre") val nombre: String = "ROLE_USUARIO"
+)
+
+data class LoginDTO(
+    @SerializedName("correo") val correo: String,
+    @SerializedName("contrasenna") val contrasenna: String
 )

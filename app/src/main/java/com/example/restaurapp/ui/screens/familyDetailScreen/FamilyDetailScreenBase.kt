@@ -99,7 +99,7 @@ fun FamilyDetailScreenBase(
                         // CORRECCIÓN 3: Iteramos sobre 'conceptsInFamily'
                         items(
                             items = conceptsInFamily,
-                            key = { it.technicalId }
+                            key = { "TECNICO-${it.technicalId}" }
                         ) { concepto ->
                             // Pasamos el concepto técnico y gestionamos los clics
                             ConceptListItem(

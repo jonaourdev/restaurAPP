@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.ui.screens.listConceptScreen.ConceptListItem
 import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.ConceptViewModel
@@ -22,7 +23,8 @@ private data class ConceptoFavorito(
     val id: Long,
     val name: String,
     val description: String,
-    val isFavorite: Boolean
+    val isFavorite: Boolean,
+    val type: String
 )
 
 @Composable
@@ -42,14 +44,16 @@ fun FavoritesScreenBase(
             id = formativo.formativeCId,
             name = formativo.formativeName,
             description = formativo.formativeDescription,
-            isFavorite = formativo.isFavorite
+            isFavorite = formativo.isFavorite,
+            type = ConceptType.FORMATIVO
         )
     } + uiState.families.flatMap { it.conceptosTecnicos }.map { tecnico ->
         ConceptoFavorito(
             id = tecnico.technicalId,
             name = tecnico.technicalName,
             description = tecnico.technicalDescription,
-            isFavorite = tecnico.isFavorite
+            isFavorite = tecnico.isFavorite,
+            type = ConceptType.FORMATIVO
         )
     }
 
@@ -90,7 +94,7 @@ fun FavoritesScreenBase(
                 ) {
                     items(
                         items = favoriteConcepts,
-                        key = { it.id }
+                        key = { "${it.type}-${it.id}" }
                     ) { concepto -> // 'concepto' es ahora de tipo 'ConceptoFavorito'
                         // Ahora Kotlin entiende perfectamente qué es 'concepto' y sus propiedades
                         ConceptListItem(
