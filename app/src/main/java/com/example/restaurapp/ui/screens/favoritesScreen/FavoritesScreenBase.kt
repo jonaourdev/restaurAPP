@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.restaurapp.model.local.concepts.ConceptType
 import com.example.restaurapp.ui.screens.listConceptScreen.ConceptListItem
 import com.example.restaurapp.viewmodel.AuthViewModel
 import com.example.restaurapp.viewmodel.ConceptViewModel
@@ -93,7 +94,7 @@ fun FavoritesScreenBase(
                 ) {
                     items(
                         items = favoriteConcepts,
-                        key = { it.id }
+                        key = { "${it.type}-${it.id}" }
                     ) { concepto -> // 'concepto' es ahora de tipo 'ConceptoFavorito'
                         // Ahora Kotlin entiende perfectamente qué es 'concepto' y sus propiedades
                         ConceptListItem(

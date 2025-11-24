@@ -119,7 +119,7 @@ fun ListConceptScreenBase(
                             } else {
                                 items(
                                     items = uiState.families,
-                                    key = { family -> family.id }
+                                    key = { family -> "FAMILY-${family.id}" }
                                 ) { family ->
                                     FamilyListItem(
                                         family = family,
@@ -140,7 +140,7 @@ fun ListConceptScreenBase(
                             } else {
                                 items(
                                     items = uiState.conceptosFormativos,
-                                    key = { it.formativeCId }
+                                    key = { "FORMATIVO-${it.formativeCId}" }
                                 ) { concepto ->
                                     ConceptListItem(
                                         conceptName = concepto.formativeName,

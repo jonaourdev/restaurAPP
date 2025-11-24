@@ -7,16 +7,16 @@ data class ConceptoTecnicoNetworkDTO(
     @SerializedName("technicalId") val technicalId: Long,
     @SerializedName("technicalName") val technicalName: String,
     @SerializedName("technicalDescription") val technicalDescription: String,
-    @SerializedName("isFavorite") var isFavorite: Boolean,
-    @SerializedName("imageUrl") val imageUrl: String?
+    @SerializedName("isFavorite") var isFavorite: Boolean = false,
+    @SerializedName("imageUrl") val imageUrl: String? = null
 )
 
 data class ConceptoFormativoNetworkDTO(
     @SerializedName("formativeCId") val formativeCId: Long,
-    @SerializedName("formativeName") val formativeName: String,
-    @SerializedName("formativeDescription") val formativeDescription: String,
-    @SerializedName("isFavorite") var isFavorite: Boolean,
-    @SerializedName("imageUrl") val imageUrl: String?
+    @SerializedName("formative_name") val formativeName: String,
+    @SerializedName("formative_description") val formativeDescription: String,
+    @SerializedName("isFavorite") var isFavorite: Boolean = false,
+    @SerializedName("imageUrl") val imageUrl: String? = null
 )
 
 
