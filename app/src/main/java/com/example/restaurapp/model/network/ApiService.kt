@@ -15,7 +15,7 @@ import retrofit2.http.Path
 import retrofit2.http.DELETE
 import retrofit2.http.Query
 
-private const val BASE_URL = "http://100.28.231.208:8080/"
+private const val BASE_URL = "http://10.0.2.2:8080/"
 
 object RetrofitClient {
     val apiService: ApiService by lazy {
@@ -57,7 +57,8 @@ interface ApiService {
     @POST("api/v1/usuarios")
     suspend fun createUser(@Body user: UserCreateDTO): Response<Unit>
 
-    @GET("api/v1/usuarios/{correo}")
-    suspend fun getUserByEmail(@Path("correo") correo: String): Response<UserResponseDTO>
+    @POST("api/v1/usuarios/login")
+    suspend fun loginUser(@Body credentials: LoginDTO): Response<UserResponseDTO>
+
 
 }

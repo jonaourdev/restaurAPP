@@ -22,7 +22,8 @@ private data class ConceptoFavorito(
     val id: Long,
     val name: String,
     val description: String,
-    val isFavorite: Boolean
+    val isFavorite: Boolean,
+    val type: String
 )
 
 @Composable
@@ -42,14 +43,16 @@ fun FavoritesScreenBase(
             id = formativo.formativeCId,
             name = formativo.formativeName,
             description = formativo.formativeDescription,
-            isFavorite = formativo.isFavorite
+            isFavorite = formativo.isFavorite,
+            type = ConceptType.FORMATIVO
         )
     } + uiState.families.flatMap { it.conceptosTecnicos }.map { tecnico ->
         ConceptoFavorito(
             id = tecnico.technicalId,
             name = tecnico.technicalName,
             description = tecnico.technicalDescription,
-            isFavorite = tecnico.isFavorite
+            isFavorite = tecnico.isFavorite,
+            type = ConceptType.FORMATIVO
         )
     }
 
