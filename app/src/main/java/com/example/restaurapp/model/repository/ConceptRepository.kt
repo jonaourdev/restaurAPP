@@ -84,11 +84,11 @@ open class ConceptRepository(
     /**
      * Envía un nuevo concepto formativo al endpoint POST /api/v1/conceptos-formativos.
      */
-    suspend fun addConceptoFormativo(nombre: String, desc: String, userId: Int) {
+    suspend fun addConceptoFormativo(nombre: String, desc: String, userId: Long) {
         val dto = ConceptoFormativoCreateDTO(
             formativeName = nombre.trim(),
             formativeDescription = desc.trim(),
-            usuarioCreador = IdWrapper(id = userId)
+            usuarioCreador = UsuarioCreateRef(idUsuario = userId)   //CAMBIAR IDWRAPER
         )
 
         Log.d("ConceptRepository", "Creando formativo: $nombre")
@@ -106,12 +106,12 @@ open class ConceptRepository(
     /**
      * Envía un nuevo concepto técnico al endpoint POST /api/v1/conceptos-tecnicos.
      */
-    suspend fun addConceptoTecnico(nombre: String, desc: String, userId: Int, familiaId: Long) {
+    suspend fun addConceptoTecnico(nombre: String, desc: String, userId: Long, familiaId: Long) {
         val dto = ConceptoTecnicoCreateDTO(
             technicalName = nombre.trim(),
             technicalDescription = desc.trim(),
-            usuarioCreador = IdWrapper(id = userId),
-            familia = IdWrapper(id = familiaId)
+            usuarioCreador = UsuarioCreateRef(idUsuario = userId),    //CAMBIAR IDWRAPER
+            familia = FamiliaCreateRef(familyId = familiaId) //CAMBIAR IDWRAPER
         )
 
         Log.d("ConceptRepository", "Creando técnico: $nombre para familia $familiaId")

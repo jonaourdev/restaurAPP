@@ -181,7 +181,7 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         }
     }
 
-    fun addConcept(currentUserId: Int) = viewModelScope.launch {
+    fun addConcept(currentUserId: Long) = viewModelScope.launch {
         val state = _uiState.value
         if (state.nombreConcepto.isBlank()) {
             _uiState.update { it.copy(error = "El nombre no puede estar vacío.") }
@@ -214,7 +214,7 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
                 nombreConcepto = "",
                 descripcion = ""
             )}
-            refreshAllData(currentUserId)
+            refreshAllData(currentUserId.toInt())
 
         } catch (e: Exception) {
             _uiState.update { it.copy(isLoading = false, error = e.message) }

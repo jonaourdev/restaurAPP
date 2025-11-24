@@ -70,7 +70,7 @@ fun AddConceptScreenBase(
                     onDescriptionChange = vm::onDescriptionChange,
                     onSaveClick = {
                         authState.currentUser?.id?.let { userId ->
-                            vm.addConcept(userId)
+                            vm.addConcept(userId.toLong())
                         }
                     }
                 )
