@@ -44,42 +44,85 @@ class AuthRepository {
      * Realiza el login de un usuario llamando al nuevo endpoint POST /api/v1/usuarios/login.
      * Devuelve una UserEntity para ser usada en la app o null si el login falla.
      */
-    suspend fun login(correo: String, contrasenna: String): UserEntity? {
+
+    suspend fun login(correo: String, contrasenna: String): Result<UserEntity> {
         Log.d("AuthRepository", "Intentando login seguro para: $correo")
-        try {
-            // 🚩 CAMBIO CLAVE: Usar el nuevo LoginDTO y el endpoint POST /login
+
+        return try {
             val credentials = LoginDTO(correo.trim(), contrasenna)
             val response = apiService.loginUser(credentials)
 
-            if (response.isSuccessful) {
-                val usuarioRespuesta = response.body() // Esto es un UserResponseDTO
+            if (response.isSuccessful && response.body() != null) {
 
-                if (usuarioRespuesta != null) {
-                    Log.d("AuthRepository", "Login exitoso para: ${usuarioRespuesta.correo}")
-                    // Mapeamos el DTO de respuesta a nuestra entidad local (UserEntity)
-                    return UserEntity(
-                        id = usuarioRespuesta.id, // Usamos el id del DTO
-                        nombres = usuarioRespuesta.nombres,
-                        apellidos = usuarioRespuesta.apellidos,
-                        correo = usuarioRespuesta.correo,
-                        contrasenna = "", // La contraseña ya no se maneja aquí.
-                        // 🚩 CORRECCIÓN APLICADA: Acceso seguro a 'rol' y valor por defecto si es nulo.
-                        rol = usuarioRespuesta.rol?.nombre ?: "ROLE_USUARIO"
-                    )
-                }
+                val usuario = response.body()!!
+
+                val usuarioLocal = UserEntity(
+                    id = usuario.id,
+                    nombres = usuario.nombres,
+                    apellidos = usuario.apellidos,
+                    correo = usuario.correo,
+                    contrasenna = "",
+                    rol = usuario.rol?.nombre ?: "ROLE_USUARIO"
+                )
+
+                Log.d("AuthRepository", "Login exitoso para: ${usuarioLocal.correo}")
+
+                Result.success(usuarioLocal)
+
             } else {
-                // Si la respuesta no es 200/201 (ej. 404 por credenciales inválidas), lanzamos una excepción.
-                Log.w("AuthRepository", "Fallo de autenticación para: $correo. Código: ${response.code()}")
-                // Lanzamos una excepción para que el ViewModel muestre un error genérico.
-                throw Exception("Correo o contraseña inválidos")
+                Log.w("AuthRepository", "Fallo de autenticación para $correo. Code: ${response.code()}")
+
+                // Retornamos error SIN lanzar Exception
+                Result.failure(Exception("Correo o contraseña inválidos"))
             }
+
         } catch (e: Exception) {
-            // Error de conexión u otro error inesperado.
-            // Es importante registrar la excepción original para debug.
             Log.e("AuthRepository", "Error de red en login: ${e.message}")
-            // Propagamos una excepción más clara para el ViewModel
-            throw Exception("Error de conexión. No se pudo iniciar sesión.")
+
+            // Devolvemos error sin romper la app
+            Result.failure(Exception("No se pudo conectar con el servidor"))
         }
-        return null
     }
+
+
+
+
+
+//    suspend fun login(correo: String, contrasenna: String): UserEntity? {
+//        Log.d("AuthRepository", "Intentando login seguro para: $correo")
+//        try {
+//            val credentials = LoginDTO(correo.trim(), contrasenna)
+//            val response = apiService.loginUser(credentials)
+//
+//            if (response.isSuccessful) {
+//                val usuarioRespuesta = response.body() // Esto es un UserResponseDTO
+//
+//                if (usuarioRespuesta != null) {
+//                    Log.d("AuthRepository", "Login exitoso para: ${usuarioRespuesta.correo}")
+//                    // Mapeamos el DTO de respuesta a nuestra entidad local (UserEntity)
+//                    return UserEntity(
+//                        id = usuarioRespuesta.id, // Usamos el id del DTO
+//                        nombres = usuarioRespuesta.nombres,
+//                        apellidos = usuarioRespuesta.apellidos,
+//                        correo = usuarioRespuesta.correo,
+//                        contrasenna = "", // La contraseña ya no se maneja aquí.
+//                        // 🚩 CORRECCIÓN APLICADA: Acceso seguro a 'rol' y valor por defecto si es nulo.
+//                        rol = usuarioRespuesta.rol?.nombre ?: "ROLE_USUARIO"
+//                    )
+//                }
+//            } else {
+//                // Si la respuesta no es 200/201 (ej. 404 por credenciales inválidas), lanzamos una excepción.
+//                Log.w("AuthRepository", "Fallo de autenticación para: $correo. Código: ${response.code()}")
+//                // Lanzamos una excepción para que el ViewModel muestre un error genérico.
+//                throw Exception("Correo o contraseña inválidos")
+//            }
+//        } catch (e: Exception) {
+//            // Error de conexión u otro error inesperado.
+//            // Es importante registrar la excepción original para debug.
+//            Log.e("AuthRepository", "Error de red en login: ${e.message}")
+//            // Propagamos una excepción más clara para el ViewModel
+//            throw Exception("Error de conexión. No se pudo iniciar sesión.")
+//        }
+//        return null
+//    }
 }

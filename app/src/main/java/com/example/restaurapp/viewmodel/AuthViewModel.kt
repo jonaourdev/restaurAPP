@@ -51,18 +51,53 @@ class AuthViewModel(
     fun onLoginCorreoChange(v: String) = _uiState.update { it.copy(loginCorreo = v, error = null) }
     fun onLoginContrasennaChange(v: String) = _uiState.update { it.copy(loginContrasenna = v, error = null) }
 
+
     fun login() = viewModelScope.launch {
         val state = _uiState.value
-        val user = authRepo.login(state.loginCorreo, state.loginContrasenna)
+        val result = authRepo.login(state.loginCorreo, state.loginContrasenna)
 
-        if (user == null) {
-            _uiState.update { it.copy(error = "Correo o contraseña inválidos.") }
-        } else {
-            _uiState.update { it.copy(isLoading = true, error = null, currentUser = user) }
+        result.onSuccess { user ->
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    error = null,
+                    currentUser = user
+                )
+            }
+
             delay(3000)
-            _uiState.update { it.copy(success = true, isLoading = false) }
+
+            _uiState.update {
+                it.copy(
+                    success = true,
+                    isLoading = false
+                )
+            }
+        }
+
+        result.onFailure { error ->
+            _uiState.update {
+                it.copy(
+                    error = error.message ?: "Error desconocido",
+                    isLoading = false
+                )
+            }
         }
     }
+
+
+//    fun login() = viewModelScope.launch {
+//        val state = _uiState.value
+//        val user = authRepo.login(state.loginCorreo, state.loginContrasenna)
+//
+//        if (user == null) {
+//            _uiState.update { it.copy(error = "Correo o contraseña inválidos.") }
+//        } else {
+//            _uiState.update { it.copy(isLoading = true, error = null, currentUser = user) }
+//            delay(3000)
+//            _uiState.update { it.copy(success = true, isLoading = false) }
+//        }
+//    }
 
     // --- FUNCIONES DE REGISTRO (ACTUALIZADAS) ---
     fun onRegisterNombresChange(v: String) = _uiState.update { it.copy(registerNombres = v, error = null) }
@@ -71,45 +106,118 @@ class AuthViewModel(
     fun onRegisterContrasennaChange(v: String) = _uiState.update { it.copy(registerContrasenna = v, error = null) }
     fun onRegisterConfirmarContrasennaChange(v: String) = _uiState.update { it.copy(registerConfirmarContrasenna = v, error = null) }
 
+
+
     fun registrar() = viewModelScope.launch {
         val f = _uiState.value
         _uiState.update { it.copy(error = null) }
 
-        // --- Validaciones de Registro ---
-        if (f.registerNombres.isBlank() || f.registerApellidos.isBlank() || f.registerCorreo.isBlank() || f.registerContrasenna.isBlank()) {
+        // --- Validaciones ---
+        if (f.registerNombres.isBlank() ||
+            f.registerApellidos.isBlank() ||
+            f.registerCorreo.isBlank() ||
+            f.registerContrasenna.isBlank()
+        ) {
             _uiState.update { it.copy(error = "Completa todos los campos.") }
             return@launch
         }
+
         val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
         if (!emailRegex.matches(f.registerCorreo.trim())) {
             _uiState.update { it.copy(error = "Ingresa un correo válido.") }
             return@launch
         }
+
         if (f.registerContrasenna.length < 8) {
             _uiState.update { it.copy(error = "La contraseña debe tener al menos 8 caracteres.") }
             return@launch
         }
+
         if (f.registerContrasenna != f.registerConfirmarContrasenna) {
             _uiState.update { it.copy(error = "Las contraseñas no coinciden.") }
             return@launch
         }
 
         _uiState.update { it.copy(isLoading = true) }
+
         try {
-            // Pasamos los campos separados al repositorio
+            // --- Registrar usuario ---
             authRepo.register(
                 nombres = f.registerNombres,
                 apellidos = f.registerApellidos,
                 correo = f.registerCorreo,
                 contrasenna = f.registerContrasenna
             )
-            val newUser = authRepo.login(f.registerCorreo, f.registerContrasenna)
-            delay(3000)
-            _uiState.update { it.copy(success = true, isLoading = false, currentUser = newUser) }
+
+            // --- Login automático ---
+            val resultLogin = authRepo.login(f.registerCorreo, f.registerContrasenna)
+
+            resultLogin.onSuccess { user ->
+                delay(3000)
+                _uiState.update {
+                    it.copy(
+                        success = true,
+                        isLoading = false,
+                        currentUser = user
+                    )
+                }
+            }
+
+            resultLogin.onFailure { error ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = error.message ?: "Error desconocido"
+                    )
+                }
+            }
+
         } catch (e: Exception) {
             _uiState.update { it.copy(error = e.message, isLoading = false) }
         }
     }
+
+
+
+//    fun registrar() = viewModelScope.launch {
+//        val f = _uiState.value
+//        _uiState.update { it.copy(error = null) }
+//
+//        // --- Validaciones de Registro ---
+//        if (f.registerNombres.isBlank() || f.registerApellidos.isBlank() || f.registerCorreo.isBlank() || f.registerContrasenna.isBlank()) {
+//            _uiState.update { it.copy(error = "Completa todos los campos.") }
+//            return@launch
+//        }
+//        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
+//        if (!emailRegex.matches(f.registerCorreo.trim())) {
+//            _uiState.update { it.copy(error = "Ingresa un correo válido.") }
+//            return@launch
+//        }
+//        if (f.registerContrasenna.length < 8) {
+//            _uiState.update { it.copy(error = "La contraseña debe tener al menos 8 caracteres.") }
+//            return@launch
+//        }
+//        if (f.registerContrasenna != f.registerConfirmarContrasenna) {
+//            _uiState.update { it.copy(error = "Las contraseñas no coinciden.") }
+//            return@launch
+//        }
+//
+//        _uiState.update { it.copy(isLoading = true) }
+//        try {
+//            // Pasamos los campos separados al repositorio
+//            authRepo.register(
+//                nombres = f.registerNombres,
+//                apellidos = f.registerApellidos,
+//                correo = f.registerCorreo,
+//                contrasenna = f.registerContrasenna
+//            )
+//            val newUser = authRepo.login(f.registerCorreo, f.registerContrasenna)
+//            delay(3000)
+//            _uiState.update { it.copy(success = true, isLoading = false, currentUser = newUser) }
+//        } catch (e: Exception) {
+//            _uiState.update { it.copy(error = e.message, isLoading = false) }
+//        }
+//    }
 
     // --- LÓGICA DE ACTUALIZACIÓN DE PERFIL (ACTUALIZADA) ---
 
