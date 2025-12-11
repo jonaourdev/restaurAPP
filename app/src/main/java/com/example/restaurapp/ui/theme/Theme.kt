@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -18,9 +19,24 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Gray60,
+    primary = DuocBlue,
+    onPrimary = Color.White,
     secondary = Black90,
-    tertiary = Cream60
+    tertiary = Cream60,
+
+    //Background
+    background = Background,
+
+    //Texto
+    onBackground = Color.White,
+
+
+    //NavBar
+    surface = NavBarMain,
+    onSurface = NavBarSelected,
+    surfaceVariant = NavBarUnselected,
+    onSurfaceVariant = Color.White,
+
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),

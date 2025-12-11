@@ -1,25 +1,41 @@
+// Contenido corregido y "adelgazado" de AppDatabase.kt
 package com.example.restaurapp.model.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.restaurapp.model.local.user.UserDao
+import com.example.restaurapp.model.local.user.UserEntity
 
-@Database(entities = [RegisterEntity::class], version = 1, exportSchema = false)
+@Database(
+    entities = [
+        UserEntity::class
+    ],
+    version = 1,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun registerDao(): RegisterDao
+    abstract fun userDao(): UserDao
+
 
     companion object {
-        @Volatile private var INSTANCE: AppDatabase? = null
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
 
-        fun get(context: Context): AppDatabase =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: Room.databaseBuilder(
+        fun get(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "registros.db"
-                ).build().also { INSTANCE = it }
+                    "app_database"
+                )
+                    .fallbackToDestructiveMigration()
+                    .build().also {
+                        INSTANCE = it
+                    }
             }
+        }
     }
 }
