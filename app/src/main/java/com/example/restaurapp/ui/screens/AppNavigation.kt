@@ -2,7 +2,9 @@
 
 package com.example.restaurapp.ui.screens
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -10,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -31,6 +34,7 @@ import com.example.restaurapp.ui.screens.homeScreen.HomeScreen
 import com.example.restaurapp.ui.screens.listConceptScreen.ListConceptScreen
 import com.example.restaurapp.ui.screens.loginScreen.LoginScreen
 import com.example.restaurapp.ui.screens.profileScreen.ProfileScreen
+import com.example.restaurapp.ui.screens.subfamilyDetailScreen.SubfamilyDetailScreenBase
 import com.example.restaurapp.viewmodel.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -209,7 +213,8 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
             route = Screen.DetailFamily.route + "/{familyId}",
             arguments = listOf(navArgument("familyId") { type = NavType.LongType })
         ) { backStackEntry ->
-            val familyId = backStackEntry.arguments?.getLong("familyId") ?: 0
+
+            val familyId = backStackEntry.arguments?.getLong("familyId") ?: 0L
 
             FamilyDetailScreen(
                 windowSizeClass = windowSizeClass,
@@ -220,9 +225,31 @@ fun AppNavHost(navController: NavHostController, windowSizeClass: WindowSizeClas
                 onNavigateToAddConcept = { fId ->
                     navController.navigate(Screen.AddConcept.route + "?tipo=${ConceptType.TECNICO}&familyId=$fId")
                 },
+                onNavigateToSubfamilyDetail = { subfamiliaId ->
+                    navController.navigate(Screen.DetailSubfamily.route + "/$subfamiliaId")
+                }
+            )
+        }
+        // --- Detail Subfamily Screen ---
+        composable(
+            route = Screen.DetailSubfamily.route + "/{subfamiliaId}",
+            arguments = listOf(
+                navArgument("subfamiliaId") { type = NavType.LongType }
+            )
+        ) { backStack ->
+            val subfamiliaId = backStack.arguments?.getLong("subfamiliaId") ?: 0L
+
+            SubfamilyDetailScreenBase(
+                authVm = authVm,
+                vm = conceptVm,
+                subfamiliaId = subfamiliaId,
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToConceptDetail = { conceptId ->
                     navController.navigate(Screen.DetailConcept.route + "/$conceptId")
-                }
+                },
+                contentPadding = PaddingValues(16.dp),
+                gridCells = GridCells.Adaptive(160.dp),
+                itemSpacing = 16.dp
             )
         }
 

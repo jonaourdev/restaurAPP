@@ -16,7 +16,7 @@ fun FamilyDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAddConcept: (Long) -> Unit,
     authVm: AuthViewModel,
-    onNavigateToConceptDetail: (conceptId: Long) -> Unit
+    onNavigateToSubfamilyDetail: (subfamilia: Long) -> Unit
 ) {
     when (windowSizeClass.widthSizeClass) {
         WindowWidthSizeClass.Compact -> {
@@ -27,7 +27,7 @@ fun FamilyDetailScreen(
                 vm = vm,
                 onNavigateBack = onNavigateBack,
                 onNavigateToAddConcept = onNavigateToAddConcept,
-                onNavigateToConceptDetail = onNavigateToConceptDetail
+                onNavigateToSubfamilyDetail = onNavigateToSubfamilyDetail
             )
         }
         WindowWidthSizeClass.Medium -> {
@@ -38,7 +38,7 @@ fun FamilyDetailScreen(
                 vm = vm,
                 onNavigateBack = onNavigateBack,
                 onNavigateToAddConcept = onNavigateToAddConcept,
-                onNavigateToConceptDetail = onNavigateToConceptDetail
+                onNavigateToSubfamilyDetail = onNavigateToSubfamilyDetail
             )
         }
         else -> {
@@ -49,7 +49,7 @@ fun FamilyDetailScreen(
                 vm = vm,
                 onNavigateBack = onNavigateBack,
                 onNavigateToAddConcept = onNavigateToAddConcept,
-                onNavigateToConceptDetail = onNavigateToConceptDetail
+                onNavigateToSubfamilyDetail = onNavigateToSubfamilyDetail
             )
         }
     }

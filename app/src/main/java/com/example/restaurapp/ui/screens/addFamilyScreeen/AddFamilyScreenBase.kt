@@ -47,11 +47,14 @@ fun AddFamilyScreenBase(
     val uiState by vm.uiState.collectAsState()
     val authState by authVm.uiState.collectAsState()
 
+    // Manejo de éxito o error
     LaunchedEffect(uiState.successMessage, uiState.error) {
-        if (uiState.successMessage != null || uiState.error != null) {
-            onNavigateBack()
+        // Si hay un mensaje de éxito, volvemos atrás
+        if (uiState.successMessage != null) {
             vm.clearMessages()
+            onNavigateBack()
         }
+        // Si hay error, no navegamos, dejamos que se muestre en el texto de error
     }
 
     Scaffold(
@@ -84,9 +87,9 @@ fun AddFamilyScreenBase(
                     uiState = uiState,
                     onNameChange = vm::onFamilyNameChange,
                     onDescriptionChange = vm::onFamilyDescriptionChange,
-                    onComponentsChange = vm::onFamilyComponentsChange, // 🚩 AÑADIDO: Conexión al nuevo setter
                     onSaveClick = {
                         authState.currentUser?.id?.let { userId ->
+                            // El ViewModel ahora debe llamar al repositorio sin el campo componentes
                             vm.addFamily(userId)
                         }
                     }
@@ -117,7 +120,6 @@ fun FamilyForm(
     uiState: ConceptUiState,
     onNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
-    onComponentsChange: (String) -> Unit, // 🚩 AÑADIDO: Nuevo parámetro
     onSaveClick: () -> Unit
 ){
     Column(
@@ -131,7 +133,7 @@ fun FamilyForm(
             textAlign = TextAlign.Center
         )
 
-        //Campo para el nombre de la familia
+        // Campo para el nombre de la familia
         OutlinedTextField(
             value = uiState.familyName,
             onValueChange = onNameChange,
@@ -142,8 +144,7 @@ fun FamilyForm(
             enabled = !uiState.isLoading
         )
 
-
-        //Campo para la descripcion de la familia
+        // Campo para la descripción de la familia
         OutlinedTextField(
             value = uiState.familyDescription,
             onValueChange = onDescriptionChange,
@@ -155,32 +156,21 @@ fun FamilyForm(
             enabled = !uiState.isLoading
         )
 
-        // 🚩 AÑADIDO: Campo para los Componentes de la familia
-        OutlinedTextField(
-            value = uiState.familyComponents,
-            onValueChange = onComponentsChange,
-            label = { Text("Componentes (Requerido)") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp),
-            isError = uiState.error != null,
-            enabled = !uiState.isLoading
-        )
+        // NOTA: Se eliminó el campo "Componentes" que causaba conflicto con el backend
 
-        //Botón para guardar
+        // Botón para guardar
         Button(
             onClick = onSaveClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            // 🚩 VALIDACIÓN CORREGIDA: Habilitado solo si NOMBRE y COMPONENTES NO están vacíos
-            enabled = !uiState.isLoading && uiState.familyName.isNotBlank() && uiState.familyComponents.isNotBlank()
+            // Validación corregida: solo requiere nombre y descripción
+            enabled = !uiState.isLoading && uiState.familyName.isNotBlank() && uiState.familyDescription.isNotBlank()
         ) {
             Text(
                 text = if (uiState.isLoading) "Guardando..." else "Guardar familia",
                 fontSize = 16.sp
             )
         }
-
     }
 }
