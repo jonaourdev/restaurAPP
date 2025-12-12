@@ -8,21 +8,18 @@ import retrofit2.http.Path
 
 interface ApiService {
 
-    // ----------------------------------------------------------------
-    // AUTENTICACIÓN (Usuarios)
-    // ----------------------------------------------------------------
+    // --- AUTENTICACIÓN ---
 
-    // Asegúrate de que estos DTOs existan en tu archivo UserDTOs.kt
+    // CORREGIDO: Renombrado a loginUser para coincidir con AuthRepository
     @POST("api/v1/auth/login")
-    suspend fun login(@Body loginDto: LoginRequestDTO): Response<LoginResponseDTO>
+    suspend fun loginUser(@Body loginDto: LoginDTO): Response<LoginResponseDTO>
 
-    @POST("api/v1/auth/register")
-    suspend fun register(@Body registerDto: RegisterRequestDTO): Response<RegisterResponseDTO>
+    // CORREGIDO: Renombrado a createUser para coincidir con AuthRepository
+    @POST("api/v1/usuarios") // Nota: Verifiqué tu UsuarioController y el POST es en /api/v1/usuarios
+    suspend fun createUser(@Body registerDto: UserCreateDTO): Response<UserResponseDTO>
 
 
-    // ----------------------------------------------------------------
-    // FAMILIAS
-    // ----------------------------------------------------------------
+    // --- FAMILIAS ---
 
     @GET("api/v1/familias")
     suspend fun getAllFamilies(): List<FamiliaNetworkDTO>
@@ -31,12 +28,8 @@ interface ApiService {
     suspend fun createFamilia(@Body familia: FamiliaCreateDTO): Response<FamiliaNetworkDTO>
 
 
-    // ----------------------------------------------------------------
-    // SUBFAMILIAS (NUEVO - Requerido por tu Backend)
-    // ----------------------------------------------------------------
+    // --- SUBFAMILIAS ---
 
-    // Este endpoint es vital para listar subfamilias dentro de una familia
-    // Backend: @GetMapping("/familia/{familiaId}") en SubfamiliaController
     @GET("api/v1/subfamilias/familia/{familiaId}")
     suspend fun getSubfamilias(@Path("familiaId") familiaId: Long): List<SubfamiliaNetworkDTO>
 
@@ -44,24 +37,22 @@ interface ApiService {
     suspend fun createSubfamilia(@Body subfamilia: SubfamiliaCreateDTO): Response<SubfamiliaNetworkDTO>
 
 
-    // ----------------------------------------------------------------
-    // CONCEPTOS TÉCNICOS
-    // ----------------------------------------------------------------
+    // --- CONCEPTOS TÉCNICOS ---
 
-    // Nota: Tu backend actual lista TODOS. Si necesitas filtrar por subfamilia
-    // idealmente deberías crear un endpoint en backend: /subfamilia/{id}
     @GET("api/v1/conceptos-tecnicos")
     suspend fun getAllConceptosTecnicos(): List<ConceptoTecnicoNetworkDTO>
+
+    // AGREGADO: Necesario para filtrar conceptos por subfamilia
+    // IMPORTANTE: Debes descomentar el endpoint en tu ConceptoTecnicoController del backend
+    @GET("api/v1/conceptos-tecnicos/subfamilia/{subfamiliaId}")
+    suspend fun getConceptosBySubfamilia(@Path("subfamiliaId") subfamiliaId: Long): List<ConceptoTecnicoNetworkDTO>
 
     @POST("api/v1/conceptos-tecnicos")
     suspend fun createConceptoTecnico(@Body concepto: ConceptoTecnicoCreateDTO): Response<ConceptoTecnicoNetworkDTO>
 
 
-    // ----------------------------------------------------------------
-    // CONCEPTOS FORMATIVOS (LO QUE PEDISTE)
-    // ----------------------------------------------------------------
+    // --- CONCEPTOS FORMATIVOS ---
 
-    // Backend: @GetMapping en ConceptoFormativoController
     @GET("api/v1/conceptos-formativos")
     suspend fun getAllConceptosFormativos(): List<ConceptoFormativoNetworkDTO>
 
