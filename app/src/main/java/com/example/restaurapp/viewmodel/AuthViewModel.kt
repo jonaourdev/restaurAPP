@@ -53,14 +53,42 @@ class AuthViewModel(
 
     fun login() = viewModelScope.launch {
         val state = _uiState.value
-        val user = authRepo.login(state.loginCorreo, state.loginContrasenna)
 
-        if (user == null) {
-            _uiState.update { it.copy(error = "Correo o contraseña inválidos.") }
-        } else {
-            _uiState.update { it.copy(isLoading = true, error = null, currentUser = user) }
-            delay(3000)
-            _uiState.update { it.copy(success = true, isLoading = false) }
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                error = null,
+                success = false
+            )
+        }
+
+        try {
+            val user = authRepo.login(state.loginCorreo, state.loginContrasenna)
+
+            if (user == null) {
+                _uiState.update {
+                    it.copy(
+                        error = "Correo o contraseña inválidos.",
+                        isLoading = false
+                    )
+                }
+            } else {
+                _uiState.update { it.copy(currentUser = user) }
+                delay(3000)
+                _uiState.update {
+                    it.copy(
+                        success = true,
+                        isLoading = false
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            _uiState.update {
+                it.copy(
+                    error = e.message ?: "Error de conexión.",
+                    isLoading = false
+                )
+            }
         }
     }
 

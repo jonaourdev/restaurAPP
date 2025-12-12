@@ -43,15 +43,14 @@ class AuthRepository {
 
                     SessionManager.saveToken(loginResponse.token)
 
-                    // Mapeo correcto de LoginResponseDTO a UserEntity local
                     return UserEntity(
-                        id = loginResponse.id.toInt(), // Convertir Long a Int si tu Entity usa Int
-                        nombres = loginResponse.names ?: "",
-                        apellidos = loginResponse.lastNames ?: "",
-                        correo = loginResponse.email,
-                        contrasenna = "", // No guardamos la contraseña plana
-                        rol = loginResponse.role, // El backend envía el string directo (ej: "USER")
-                        photoUrl = null // El login response actual no devuelve foto, puedes ajustarlo si quieres
+                        id = 0,                    // por ahora no tienes id desde el backend
+                        nombres = "",              // si luego el backend envía nombres, los mapeas aquí
+                        apellidos = "",
+                        correo = correo.trim(),    // usamos el correo que se ingresó
+                        contrasenna = "",          // nunca guardes la contraseña en claro
+                        rol = "",                  // puedes poner "USER" si quieres
+                        photoUrl = null
                     )
                 }
             } else {
