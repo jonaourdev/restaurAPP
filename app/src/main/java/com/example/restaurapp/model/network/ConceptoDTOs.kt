@@ -9,6 +9,7 @@ data class ConceptoTecnicoNetworkDTO(
     @SerializedName("descripcionTecnico") val technicalDescription: String,
     @SerializedName("imagenes") val imagenes: List<String> = emptyList(),
     @SerializedName("estado") val estado: String? = null,
+    @SerializedName("idUsuarioCreador") val creatorUserId: Long? = null,
     // Este campo es solo para UI local, no viene del backend en este DTO especifico a veces
     var isFavorite: Boolean = false
 )
@@ -18,6 +19,8 @@ data class ConceptoFormativoNetworkDTO(
     @SerializedName("nombreFormativo") val formativeName: String,
     @SerializedName("descripcionFormativo") val formativeDescription: String,
     @SerializedName("imagenes") val imagenes: List<String> = emptyList(),
+    @SerializedName("estado") val estado: String? = null,
+    @SerializedName("idUsuarioCreador") val creatorUserId: Long? = null,
     var isFavorite: Boolean = false
 )
 

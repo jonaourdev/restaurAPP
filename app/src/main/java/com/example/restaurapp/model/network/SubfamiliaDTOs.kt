@@ -6,7 +6,8 @@ data class SubfamiliaNetworkDTO(
     @SerializedName("idSubfamilia") val id: Long,
     @SerializedName("nombreSubfamilia") val name: String,
     @SerializedName("descripcionSubfamilia") val description: String,
-    @SerializedName("familiaId") val familiaId: Long
+    @SerializedName("familiaId") val familiaId: Long,
+    @SerializedName("usuarioCreador") val usuarioCreadorId: Long? = null
 )
 
 data class SubfamiliaCreateDTO(

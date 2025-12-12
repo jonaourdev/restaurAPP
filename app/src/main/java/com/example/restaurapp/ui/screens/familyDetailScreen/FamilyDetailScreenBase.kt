@@ -1,9 +1,8 @@
-// Contenido corregido para FamilyDetailScreenBase.kt
-
 package com.example.restaurapp.ui.screens.familyDetailScreen
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -34,7 +33,7 @@ fun FamilyDetailScreenBase(
     contentPadding: PaddingValues,
     gridCells: GridCells,
     itemSpacing: Dp,
-    onNavigateToConceptDetail: (conceptId: Long) -> Unit,
+    onNavigateToSubfamilyDetail: (subfamilia: Long) -> Unit,
 ){
     val uiState by vm.uiState.collectAsState()
     val authState by authVm.uiState.collectAsState()
@@ -45,7 +44,11 @@ fun FamilyDetailScreenBase(
     val family = uiState.families.find { it.id == familyId }
 
     // CORRECCIÓN 2: Los conceptos ya están dentro del objeto 'family'. No hay que filtrar nada más.
-    val conceptsInFamily = family?.conceptosTecnicos ?: emptyList()
+    val subfamiliasInFamily = uiState.subfamilies.filter { it.familiaId == familyId }
+
+    LaunchedEffect(familyId) {
+        vm.loadSubfamilies(familyId)
+    }
 
     Scaffold(
         modifier = Modifier,
@@ -79,15 +82,18 @@ fun FamilyDetailScreenBase(
         ) {
             when {
                 uiState.isLoading -> CircularProgressIndicator()
-                uiState.error != null -> Text("Error: ${uiState.error}", color = MaterialTheme.colorScheme.error)
+                uiState.error != null -> Text(
+                    "Error: ${uiState.error}",
+                    color = MaterialTheme.colorScheme.error
+                )
+
                 family == null -> Text("Familia no encontrada.") // Mensaje si la familia no se carga
-                conceptsInFamily.isEmpty() -> {
-                    Text(
-                        "Esta familia aún no tiene conceptos. ¡Presiona '+' para añadir el primero!",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+                subfamiliasInFamily.isEmpty() -> Text(
+                    "No hay subfamilias en esta familia.",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
                 else -> {
                     LazyVerticalGrid(
                         columns = gridCells,
@@ -96,25 +102,21 @@ fun FamilyDetailScreenBase(
                         verticalArrangement = Arrangement.spacedBy(itemSpacing),
                         horizontalArrangement = Arrangement.spacedBy(itemSpacing)
                     ) {
-                        // CORRECCIÓN 3: Iteramos sobre 'conceptsInFamily'
                         items(
-                            items = conceptsInFamily,
-                            key = { "TECNICO-${it.technicalId}" }
-                        ) { concepto ->
-                            // Pasamos el concepto técnico y gestionamos los clics
+                            items = subfamiliasInFamily,
+                            key = { "SUBFAMILIA-${it.id}" }
+                        ) { subfamilia ->
                             ConceptListItem(
-                                // Reutilizamos el Composable, pasándole los datos correctos
-                                conceptName = concepto.technicalName,
-                                conceptDescription = concepto.technicalDescription,
-                                isFavorite = concepto.isFavorite,
-                                onClick = { onNavigateToConceptDetail(concepto.technicalId) },
-                                onFavoriteClick = {
-                                    authState.currentUser?.id?.let { userId ->
-                                        vm.toggleFavorite(userId, concepto.technicalId, concepto.isFavorite)
-                                    }
-                                }
+                                conceptName = subfamilia.name,
+                                conceptDescription = subfamilia.description,
+                                isFavorite = false,
+                                onClick = {
+                                    onNavigateToSubfamilyDetail(subfamilia.id) /*CAMBIAR A DETALLE SUBFAMILIA*/
+                                },
+                                onFavoriteClick = {/*NADA POR AHORA*/ }
                             )
                         }
+
                     }
                 }
             }

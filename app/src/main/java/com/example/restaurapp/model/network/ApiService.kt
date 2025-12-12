@@ -1,5 +1,6 @@
 package com.example.restaurapp.model.network
 
+import okhttp3.OkHttpClient
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -10,10 +11,16 @@ import retrofit2.http.Path
 
 private const val BASE_URL = "http://10.0.2.2:8090/"
 
+//Cleinte OkHttp con intercepter JWT
+private val okHttpClient = OkHttpClient.Builder()
+    .addInterceptor(AuthInterceptor())
+    .build()
+
 object RetrofitClient {
     val apiService: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
@@ -60,6 +67,7 @@ interface ApiService {
     // IMPORTANTE: Debes descomentar el endpoint en tu ConceptoTecnicoController del backend
     @GET("api/v1/conceptos-tecnicos/subfamilia/{subfamiliaId}")
     suspend fun getConceptosBySubfamilia(@Path("subfamiliaId") subfamiliaId: Long): List<ConceptoTecnicoNetworkDTO>
+
 
     @POST("api/v1/conceptos-tecnicos")
     suspend fun createConceptoTecnico(@Body concepto: ConceptoTecnicoCreateDTO): Response<ConceptoTecnicoNetworkDTO>

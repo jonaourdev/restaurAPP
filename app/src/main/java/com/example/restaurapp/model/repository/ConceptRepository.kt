@@ -40,6 +40,10 @@ class ConceptRepository(
         return apiService.getConceptosBySubfamilia(subfamiliaId)
     }
 
+    suspend fun getConceptosTecnicos(userId: Int): List<ConceptoTecnicoNetworkDTO> {
+        return apiService.getAllConceptosTecnicos()
+    }
+
     suspend fun addConceptoTecnico(nombre: String, descripcion: String, usuarioId: Long, subfamiliaId: Long) {
         val createDto = ConceptoTecnicoCreateDTO(
             nombreTecnico = nombre,

@@ -20,6 +20,7 @@ data class ConceptUiState(
 
     val families: List<FamiliaNetworkDTO> = emptyList(),
     val conceptosFormativos: List<ConceptoFormativoNetworkDTO> = emptyList(),
+    val conceptosTecnicos: List<ConceptoTecnicoNetworkDTO> = emptyList(),
 
     // Campos para Familia
     val familyName: String = "",
@@ -60,14 +61,18 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
                 // Ejecutamos las llamadas en paralelo para mayor eficiencia
                 val familiasDeferred = async { conceptRepository.getAllFamilies(userId) }
                 val formativosDeferred = async { conceptRepository.getConceptosFormativos(userId) }
+                val tecnicosDeferred = async { conceptRepository.getConceptosTecnicos(userId) }
+
 
                 val nuevasFamilias = familiasDeferred.await()
                 val nuevosFormativos = formativosDeferred.await()
+                val nuevosTecnicos = tecnicosDeferred.await()
 
                 _uiState.update { currentState ->
                     currentState.copy(
                         families = nuevasFamilias,
                         conceptosFormativos = nuevosFormativos,
+                        conceptosTecnicos = nuevosTecnicos,
                         isLoading = false
                     )
                 }
@@ -79,11 +84,40 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     }
 
     /**
+     * Carga los conceptos técnicos de una subfamilia específica
+     */
+    fun loadConceptosTecnicosBySubfamilia(subfamiliaId: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                val conceptos = conceptRepository.getConceptosBySubfamilia(subfamiliaId)
+
+                _uiState.update { current ->
+                    current.copy(
+                        conceptosTecnicos = conceptos,
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update { current ->
+                    current.copy(
+                        error = "Error al cargar conceptos técnicos: ${e.message}",
+                        isLoading = false
+                    )
+                }
+            }
+        }
+    }
+
+
+
+    /**
      * Carga las subfamilias de una familia específica
      */
     fun loadSubfamilies(familiaId: Long) {
-        _uiState.update { it.copy(isLoading = true, currentFamilyId = familiaId) }
+
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, currentFamilyId = familiaId) }
             try {
                 val subs = conceptRepository.getSubfamilias(familiaId)
                 _uiState.update { it.copy(subfamilies = subs, isLoading = false) }

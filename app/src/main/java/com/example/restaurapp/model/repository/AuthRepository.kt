@@ -33,7 +33,6 @@ class AuthRepository {
 
     suspend fun login(correo: String, contrasenna: String): UserEntity? {
         try {
-            // CORRECCIÓN: LoginDTO ahora usa "password" internamente para el JSON
             val credentials = LoginDTO(correo.trim(), contrasenna)
             val response = apiService.loginUser(credentials)
 
@@ -41,11 +40,14 @@ class AuthRepository {
                 val loginResponse = response.body()
 
                 if (loginResponse != null) {
+
+                    SessionManager.saveToken(loginResponse.token)
+
                     // Mapeo correcto de LoginResponseDTO a UserEntity local
                     return UserEntity(
                         id = loginResponse.id.toInt(), // Convertir Long a Int si tu Entity usa Int
-                        nombres = loginResponse.names,
-                        apellidos = loginResponse.lastNames,
+                        nombres = loginResponse.names ?: "",
+                        apellidos = loginResponse.lastNames ?: "",
                         correo = loginResponse.email,
                         contrasenna = "", // No guardamos la contraseña plana
                         rol = loginResponse.role, // El backend envía el string directo (ej: "USER")

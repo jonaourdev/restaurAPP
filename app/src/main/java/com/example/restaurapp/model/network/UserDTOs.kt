@@ -15,21 +15,12 @@ data class UserResponseDTO(
     @SerializedName("nombres") val nombres: String,
     @SerializedName("apellidos") val apellidos: String,
     @SerializedName("correo") val correo: String,
-    @SerializedName("rol") val rol: RolDTO?
-)
-
-data class RolDTO(
-    @SerializedName("nombre") val nombre: String = "ROLE_USUARIO"
+    @SerializedName("fotoPerfil") val fotoPerfil: String?,
+    @SerializedName("rol") val rol: String
 )
 
 data class LoginDTO(
-    @SerializedName("correo") val correo: String,
-    @SerializedName("password") val password: String
-)
-
-data class LoginRequestDTO(
-    @SerializedName("correo") val email: String,
-    // ¡OJO AQUÍ! Tu backend en 'UsuarioLoginDTO.java' espera "password", no "contrasenna"
+    @SerializedName("email") val email: String,
     @SerializedName("password") val password: String
 )
 

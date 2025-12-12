@@ -47,13 +47,13 @@ fun FavoritesScreenBase(
             isFavorite = formativo.isFavorite,
             type = ConceptType.FORMATIVO
         )
-    } + uiState.families.flatMap { it.conceptosTecnicos }.map { tecnico ->
+    } + uiState.conceptosTecnicos.map { tecnico ->
         ConceptoFavorito(
             id = tecnico.technicalId,
             name = tecnico.technicalName,
             description = tecnico.technicalDescription,
             isFavorite = tecnico.isFavorite,
-            type = ConceptType.FORMATIVO
+            type = ConceptType.TECNICO
         )
     }
 
