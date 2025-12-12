@@ -143,29 +143,21 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
                 technicalName = formativo.formativeName,
                 technicalDescription = formativo.formativeDescription,
                 isFavorite = formativo.isFavorite,
-                imageUrl = formativo.imagenes.firstOrNull(), // Tomamos la primera imagen si existe
+                imageUrl = formativo.imagenes.firstOrNull(),
                 tipo = ConceptType.FORMATIVO
             )
         } else {
-            // 2. Si no es formativo, buscar en Conceptos Técnicos (dentro de las familias)
-            // Nota: Esto asume que tienes los técnicos cargados dentro de `families` o necesitarás una lógica
-            // para buscar en todas las subfamilias si la estructura es jerárquica.
-            // Aquí iteramos sobre las familias cargadas suponiendo que contienen los técnicos.
-
-            // Si la estructura real requiere buscar en subfamilias, habría que ajustar esto,
-            // pero basado en tu DTO actual:
-
-            // Opción A (Búsqueda en memoria si ya tienes los técnicos):
-            /* for (familia in state.families) {
-                 // Si familia tiene lista de técnicos (revisar tu DTO FamiliaNetworkDTO)
-                 // val tecnico = familia.conceptosTecnicos?.find { it.technicalId == conceptId }
-                 // if (tecnico != null) { ... mapear a ConceptoDetalleUi ... break }
+            val tecnico = state.conceptosTecnicos.find { it.technicalId == conceptId }
+            if (tecnico != null) {
+                foundConcept = ConceptoDetalleUi(
+                    technicalId = tecnico.technicalId,
+                    technicalName = tecnico.technicalName,
+                    technicalDescription = tecnico.technicalDescription,
+                    isFavorite = tecnico.isFavorite,
+                    imageUrl = tecnico.imagenes.firstOrNull(),
+                    tipo = ConceptType.TECNICO
+                )
             }
-            */
-
-            // Opción B (Búsqueda simple si no los tienes en memoria):
-            // Como fallback, podrías requerir una llamada al repositorio `findById` si no están en memoria.
-            // Por ahora, dejaré el placeholder null o lógica simplificada.
         }
 
         _uiState.update { it.copy(selectedConcept = foundConcept) }
