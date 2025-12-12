@@ -7,8 +7,7 @@ data class UserCreateDTO(
     @SerializedName("nombres") val nombres: String,
     @SerializedName("apellidos") val apellidos: String,
     @SerializedName("correo") val correo: String,
-    @SerializedName("contrasenna") val contrasenna: String,
-    @SerializedName("rol") val rol: RolDTO
+    @SerializedName("contrasenna") val contrasenna: String
 )
 
 data class UserResponseDTO(
@@ -25,7 +24,7 @@ data class RolDTO(
 
 data class LoginDTO(
     @SerializedName("correo") val correo: String,
-    @SerializedName("contrasenna") val password: String
+    @SerializedName("password") val password: String
 )
 
 data class LoginRequestDTO(

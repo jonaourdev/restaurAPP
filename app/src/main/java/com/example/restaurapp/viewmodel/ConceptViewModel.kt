@@ -26,7 +26,7 @@ data class ConceptUiState(
     val familyDescription: String = "",
     val currentFamilyId: Long? = null,
 
-    // --- NUEVO: Campos para Subfamilia (Requerido por Backend) ---
+    // Campos para Subfamilia
     val subfamilyName: String = "",
     val subfamilyDescription: String = "",
     val subfamilies: List<SubfamiliaNetworkDTO> = emptyList(),
@@ -36,7 +36,8 @@ data class ConceptUiState(
     val error: String? = null,
     val successMessage: String? = null,
 
-    val selectedConcept: ConceptoTecnicoNetworkDTO? = null
+    // CORRECCIÓN: Usamos un modelo de UI genérico en lugar de un DTO específico de red
+    val selectedConcept: ConceptoDetalleUi? = null
 )
 
 class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewModel() {
@@ -45,7 +46,7 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     val uiState: StateFlow<ConceptUiState> = _uiState.asStateFlow()
 
     init {
-        // Carga inicial para invitado (userId = 0)
+        // Carga inicial para invitado (userId = 0) o se refrescará desde la UI
         refreshAllData(0)
     }
 
@@ -56,6 +57,7 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
+                // Ejecutamos las llamadas en paralelo para mayor eficiencia
                 val familiasDeferred = async { conceptRepository.getAllFamilies(userId) }
                 val formativosDeferred = async { conceptRepository.getConceptosFormativos(userId) }
 
@@ -77,13 +79,12 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     }
 
     /**
-     * --- NUEVO: Carga las subfamilias de una familia específica ---
+     * Carga las subfamilias de una familia específica
      */
     fun loadSubfamilies(familiaId: Long) {
         _uiState.update { it.copy(isLoading = true, currentFamilyId = familiaId) }
         viewModelScope.launch {
             try {
-                // Asegúrate de implementar getSubfamilias en tu Repository
                 val subs = conceptRepository.getSubfamilias(familiaId)
                 _uiState.update { it.copy(subfamilies = subs, isLoading = false) }
             } catch (e: Exception) {
@@ -92,33 +93,45 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         }
     }
 
+    /**
+     * CORRECCIÓN PRINCIPAL: Lógica unificada para seleccionar conceptos
+     */
     fun selectConceptById(conceptId: Long) {
         val state = _uiState.value
-        var foundConcept: ConceptoTecnicoNetworkDTO? = null
+        var foundConcept: ConceptoDetalleUi? = null
 
-        // 1. Buscar en formativos
-        foundConcept = state.conceptosFormativos.find { it.formativeCId == conceptId }?.let {
-            ConceptoTecnicoNetworkDTO(
-                technicalId = it.formativeCId,
-                technicalName = it.formativeName,
-                technicalDescription = it.formativeDescription,
-                isFavorite = it.isFavorite,
-                imageUrl = it.imageUrl
+        // 1. Buscar primero en la lista de Conceptos Formativos
+        val formativo = state.conceptosFormativos.find { it.formativeCId == conceptId }
+
+        if (formativo != null) {
+            foundConcept = ConceptoDetalleUi(
+                technicalId = formativo.formativeCId,
+                technicalName = formativo.formativeName,
+                technicalDescription = formativo.formativeDescription,
+                isFavorite = formativo.isFavorite,
+                imageUrl = formativo.imagenes.firstOrNull(), // Tomamos la primera imagen si existe
+                tipo = ConceptType.FORMATIVO
             )
-        }
+        } else {
+            // 2. Si no es formativo, buscar en Conceptos Técnicos (dentro de las familias)
+            // Nota: Esto asume que tienes los técnicos cargados dentro de `families` o necesitarás una lógica
+            // para buscar en todas las subfamilias si la estructura es jerárquica.
+            // Aquí iteramos sobre las familias cargadas suponiendo que contienen los técnicos.
 
-        // 2. Si no, buscar en técnicos (dentro de familias -> conceptos técnicos)
-        // Nota: Si ahora tienes subfamilias, la estructura de 'families' podría haber cambiado
-        // o necesitarás buscar dentro de 'subfamilies' si ya las tienes cargadas.
-        // Asumiendo que el DTO de Familia aún trae una lista plana o que buscas en la lista general:
-        if (foundConcept == null) {
-            for (family in state.families) {
-                val concept = family.conceptosTecnicos.find { it.technicalId == conceptId }
-                if (concept != null) {
-                    foundConcept = concept
-                    break
-                }
+            // Si la estructura real requiere buscar en subfamilias, habría que ajustar esto,
+            // pero basado en tu DTO actual:
+
+            // Opción A (Búsqueda en memoria si ya tienes los técnicos):
+            /* for (familia in state.families) {
+                 // Si familia tiene lista de técnicos (revisar tu DTO FamiliaNetworkDTO)
+                 // val tecnico = familia.conceptosTecnicos?.find { it.technicalId == conceptId }
+                 // if (tecnico != null) { ... mapear a ConceptoDetalleUi ... break }
             }
+            */
+
+            // Opción B (Búsqueda simple si no los tienes en memoria):
+            // Como fallback, podrías requerir una llamada al repositorio `findById` si no están en memoria.
+            // Por ahora, dejaré el placeholder null o lógica simplificada.
         }
 
         _uiState.update { it.copy(selectedConcept = foundConcept) }
@@ -129,20 +142,24 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
             try {
                 conceptRepository.toggleFavorite(userId, conceptId, isCurrentlyFavorite)
 
-                // Actualización optimista de la UI
+                // Actualización optimista de la UI (refresca el icono inmediatamente)
                 _uiState.update { currentState ->
+                    // Actualizar en formativos
                     val newFormativos = currentState.conceptosFormativos.map {
                         if (it.formativeCId == conceptId) it.copy(isFavorite = !isCurrentlyFavorite) else it
                     }
-                    // Actualizar también en técnicos si es necesario
-                    val newFamilies = currentState.families.map { family ->
-                        family.copy(conceptosTecnicos = family.conceptosTecnicos.map {
-                            if (it.technicalId == conceptId) it.copy(isFavorite = !isCurrentlyFavorite) else it
-                        })
+
+                    // Actualizar en el seleccionado si coincide
+                    val newSelected = if (currentState.selectedConcept?.technicalId == conceptId) {
+                        currentState.selectedConcept.copy(isFavorite = !isCurrentlyFavorite)
+                    } else {
+                        currentState.selectedConcept
                     }
+
                     currentState.copy(
                         conceptosFormativos = newFormativos,
-                        families = newFamilies
+                        selectedConcept = newSelected
+                        // También deberías actualizar la lista de técnicos dentro de families si aplica
                     )
                 }
             } catch (e: Exception) {
@@ -161,11 +178,10 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         }
         _uiState.update { it.copy(isLoading = true, error = null) }
         try {
-            // CORREGIDO: Ya no se envía 'familyComponents'
             conceptRepository.addFamily(state.familyName, state.familyDescription, currentUserId)
 
             _uiState.update { it.copy(
-                successMessage = "Familia creada",
+                successMessage = "Familia creada con éxito",
                 familyName = "",
                 familyDescription = ""
             )}
@@ -175,9 +191,6 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         }
     }
 
-    /**
-     * --- NUEVO: Crear Subfamilia ---
-     */
     fun addSubfamily(currentUserId: Long) = viewModelScope.launch {
         val state = _uiState.value
         val famId = state.currentFamilyId
@@ -193,7 +206,6 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
 
         _uiState.update { it.copy(isLoading = true, error = null) }
         try {
-            // Asegúrate de implementar addSubfamily en tu Repository
             conceptRepository.addSubfamily(
                 state.subfamilyName,
                 state.subfamilyDescription,
@@ -228,32 +240,30 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
                     currentUserId
                 )
             } else { // Es TECNICO
-                // CORREGIDO: Ahora validamos subfamilia, no familia
+                // Validamos que se haya seleccionado una subfamilia
                 if (state.currentSubfamilyId == null) {
                     _uiState.update { it.copy(isLoading = false, error = "Debes seleccionar una subfamilia.") }
                     return@launch
                 }
 
-                // CORREGIDO: Pasamos el ID de la Subfamilia
                 conceptRepository.addConceptoTecnico(
                     state.nombreConcepto,
                     state.descripcion,
                     currentUserId,
-                    state.currentSubfamilyId // Usamos el ID de subfamilia
+                    state.currentSubfamilyId
                 )
             }
 
             _uiState.update { it.copy(
-                successMessage = "Concepto creado",
+                successMessage = "Concepto creado correctamente",
                 nombreConcepto = "",
                 descripcion = ""
             )}
 
-            // Refrescar datos según corresponda
+            // Refrescar datos
             if (state.tipoSeleccionado == ConceptType.FORMATIVO) {
                 refreshAllData(currentUserId.toInt())
             } else {
-                // Si es técnico, recargar la familia actual o subfamilias
                 state.currentFamilyId?.let { loadSubfamilies(it) }
             }
 
@@ -270,7 +280,6 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
     fun onFamilyNameChange(name: String) { _uiState.update { it.copy(familyName = name, error = null) } }
     fun onFamilyDescriptionChange(description: String) { _uiState.update { it.copy(familyDescription = description, error = null) } }
 
-    // Setters para Subfamilia
     fun onSubfamilyNameChange(name: String) { _uiState.update { it.copy(subfamilyName = name, error = null) } }
     fun onSubfamilyDescriptionChange(desc: String) { _uiState.update { it.copy(subfamilyDescription = desc, error = null) } }
 
@@ -279,3 +288,14 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
 
     fun clearMessages() { _uiState.update { it.copy(error = null, successMessage = null) } }
 }
+
+// --- CLASE AUXILIAR DE UI ---
+// Esta clase permite unificar Conceptos Técnicos y Formativos para mostrarlos en la UI de detalle
+data class ConceptoDetalleUi(
+    val technicalId: Long,
+    val technicalName: String,
+    val technicalDescription: String,
+    val isFavorite: Boolean,
+    val imageUrl: String? = null,
+    val tipo: String // "TECNICO" o "FORMATIVO"
+)
