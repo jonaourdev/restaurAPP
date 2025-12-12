@@ -4,34 +4,36 @@ import com.google.gson.annotations.SerializedName
 
 
 data class ConceptoTecnicoNetworkDTO(
-    @SerializedName("technicalId") val technicalId: Long,
-    @SerializedName("technicalName") val technicalName: String,
-    @SerializedName("technicalDescription") val technicalDescription: String,
-    @SerializedName("isFavorite") var isFavorite: Boolean = false,
-    @SerializedName("imageUrl") val imageUrl: String? = null
+    @SerializedName("idTecnico") val technicalId: Long,
+    @SerializedName("nombreTecnico") val technicalName: String,
+    @SerializedName("descripcionTecnico") val technicalDescription: String,
+    @SerializedName("imagenes") val imagenes: List<String> = emptyList(),
+    @SerializedName("estado") val estado: String? = null,
+    // Este campo es solo para UI local, no viene del backend en este DTO especifico a veces
+    var isFavorite: Boolean = false
 )
 
 data class ConceptoFormativoNetworkDTO(
-    @SerializedName("formativeCId") val formativeCId: Long,
-    @SerializedName("formative_name") val formativeName: String,
-    @SerializedName("formative_description") val formativeDescription: String,
-    @SerializedName("isFavorite") var isFavorite: Boolean = false,
-    @SerializedName("imageUrl") val imageUrl: String? = null
+    @SerializedName("idFormativo") val formativeCId: Long,
+    @SerializedName("nombreFormativo") val formativeName: String,
+    @SerializedName("descripcionFormativo") val formativeDescription: String,
+    @SerializedName("imagenes") val imagenes: List<String> = emptyList(),
+    var isFavorite: Boolean = false
 )
 
-
-
 data class ConceptoTecnicoCreateDTO(
-    @SerializedName("technicalName") val technicalName: String,
-    @SerializedName("technicalDescription") val technicalDescription: String,
-    @SerializedName("usuarioCreador") val usuarioCreador: UsuarioCreateRef,
-    @SerializedName("familia") val familia: FamiliaCreateRef
+    @SerializedName("nombreTecnico") val nombreTecnico: String,
+    @SerializedName("descripcionTecnico") val descripcionTecnico: String,
+    @SerializedName("idSubfamilia") val idSubfamilia: Long, // CRUCIAL: Apunta a Subfamilia
+    @SerializedName("usuarioCreadorId") val usuarioCreadorId: Long,
+    @SerializedName("imagenes") val imagenes: List<String> = emptyList()
 )
 
 data class ConceptoFormativoCreateDTO(
-    @SerializedName("formativeName") val formativeName: String,
-    @SerializedName("formativeDescription") val formativeDescription: String,
-    @SerializedName("usuarioCreador") val usuarioCreador: UsuarioCreateRef
+    @SerializedName("nombreFormativo") val nombreFormativo: String,
+    @SerializedName("descripcionFormativo") val descripcionFormativo: String,
+    @SerializedName("idUsuarioCreador") val idUsuarioCreador: Long,
+    @SerializedName("imagenes") val imagenes: List<String> = emptyList()
 )
 
 data class IdWrapper(

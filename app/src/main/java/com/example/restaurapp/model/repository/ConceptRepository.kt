@@ -1,152 +1,160 @@
 package com.example.restaurapp.model.repository
 
-import android.util.Log
-import com.example.restaurapp.model.network.ApiService
-import com.example.restaurapp.model.network.ConceptoFormativoCreateDTO
-import com.example.restaurapp.model.network.ConceptoTecnicoCreateDTO
+import com.example.restaurapp.model.local.concepts.ConceptDao
+import com.example.restaurapp.model.local.concepts.ConceptEntity
 import com.example.restaurapp.model.network.*
-import com.example.restaurapp.model.network.RetrofitClient
 
-/**
- * Repositorio de Conceptos (Versión 100% Online).
- *
- * Este repositorio NO utiliza la base de datos local (Room) para
- * conceptos o familias. Todas las operaciones de lectura (GET) y
- * escritura (POST/DELETE) se realizan directamente contra el backend
- * a través de Retrofit.
- */
-open class ConceptRepository(
-    // El constructor ahora está vacío, ya que no usamos Dao locales
+class ConceptRepository(
+    private val apiService: ApiService,
+    private val conceptDao: ConceptDao
 ) {
-    // Obtenemos la instancia del servicio de API (Retrofit)
-    private val apiService: ApiService = RetrofitClient.apiService
 
-    // --- MÉTODOS 'GET' (Leen de la Red) ---
+    // ----------------------------------------------------------------
+    // FAMILIAS
+    // ----------------------------------------------------------------
 
     /**
-     * Obtiene la lista completa de familias (y sus conceptos técnicos anidados)
-     * desde el endpoint GET /api/v1/familias.
-     * Pasa el 'userId' para que el backend nos diga qué conceptos son favoritos.
+     * Obtiene todas las familias y marca 'isFavorite' en los conceptos
+     * cruzando datos con la base de datos local.
      */
     suspend fun getAllFamilies(userId: Int): List<FamiliaNetworkDTO> {
-        Log.d("ConceptRepository", "Obteniendo familias para userId: $userId")
-        try {
-            return apiService.getFamilias(userId)
-        } catch (e: Exception) {
-            Log.e("ConceptRepository", "Error al obtener familias: ${e.message}")
-            // Relanzamos la excepción para que el ViewModel la maneje
-            throw Exception("Error de red al obtener familias: ${e.message}")
+        // 1. Obtener lista cruda del backend
+        val familiasNet = apiService.getAllFamilies()
+
+        // 2. Si es invitado (userId=0), devolver tal cual
+        if (userId == 0) return familiasNet
+
+        // 3. Obtener IDs de favoritos locales para este usuario
+        val favoritosIds = conceptDao.getFavoriteIdsByUserId(userId)
+
+        // 4. Recorrer la estructura y marcar isFavorite = true si coincide el ID
+        // NOTA: Dependiendo de tu backend, los conceptos pueden venir dentro de la Familia
+        // o dentro de Subfamilias anidadas. Aquí asumimos una estructura plana o mapeada.
+        return familiasNet.map { familia ->
+            // Si tu DTO de Familia tiene una lista directa de conceptos (backend legacy):
+            /* val conceptosMarcados = familia.conceptosTecnicos.map { concepto ->
+                if (favoritosIds.contains(concepto.technicalId)) {
+                    concepto.copy(isFavorite = true)
+                } else {
+                    concepto
+                }
+            }
+            familia.copy(conceptosTecnicos = conceptosMarcados)
+            */
+
+            // Si tu Backend NO devuelve conceptos dentro de familia, retorna la familia tal cual.
+            familia
         }
     }
 
     /**
-     * Obtiene la lista completa de conceptos formativos
-     * desde el endpoint GET /api/v1/conceptos-formativos.
-     * Pasa el 'userId' para los favoritos.
+     * Crea una familia nueva.
+     * CORRECCIÓN: Se eliminó el parámetro 'components' que no existe en el Backend.
      */
+    suspend fun addFamily(nombre: String, descripcion: String, usuarioId: Int) {
+        val createDto = FamiliaCreateDTO(
+            nombreFamilia = nombre,
+            descripcionFamilia = descripcion,
+            usuarioCreador = usuarioId.toLong(),
+            imagenes = emptyList() // El backend espera una lista, aunque sea vacía
+        )
+        apiService.createFamilia(createDto)
+    }
+
+    // ----------------------------------------------------------------
+    // SUBFAMILIAS (NUEVO - Requerido por Backend)
+    // ----------------------------------------------------------------
+
+    /**
+     * Obtiene las subfamilias de una familia específica.
+     */
+    suspend fun getSubfamilias(familiaId: Long): List<SubfamiliaNetworkDTO> {
+        return apiService.getSubfamilias(familiaId)
+    }
+
+    /**
+     * Crea una subfamilia nueva enlazada a una familia.
+     */
+    suspend fun addSubfamily(nombre: String, descripcion: String, usuarioId: Long, familiaId: Long) {
+        val createDto = SubfamiliaCreateDTO(
+            nombreSubfamilia = nombre,
+            descripcionSubfamilia = descripcion,
+            usuarioCreador = usuarioId, // Asegúrate de que tu Backend acepte Long aquí
+            familiaId = familiaId
+        )
+        apiService.createSubfamilia(createDto)
+    }
+
+    // ----------------------------------------------------------------
+    // CONCEPTOS TÉCNICOS
+    // ----------------------------------------------------------------
+
+    /**
+     * Crea un concepto técnico.
+     * CORRECCIÓN: Ahora se enlaza a una SUBFAMILIA, no a una Familia directa.
+     */
+    suspend fun addConceptoTecnico(nombre: String, descripcion: String, usuarioId: Long, subfamiliaId: Long) {
+        val createDto = ConceptoTecnicoCreateDTO(
+            nombreTecnico = nombre,
+            descripcionTecnico = descripcion,
+            idSubfamilia = subfamiliaId, // Apunta a Subfamilia
+            usuarioCreadorId = usuarioId,
+            imagenes = emptyList()
+        )
+        apiService.createConceptoTecnico(createDto)
+    }
+
+    // ----------------------------------------------------------------
+    // CONCEPTOS FORMATIVOS
+    // ----------------------------------------------------------------
+
     suspend fun getConceptosFormativos(userId: Int): List<ConceptoFormativoNetworkDTO> {
-        Log.d("ConceptRepository", "Obteniendo formativos para userId: $userId")
-        try {
-            return apiService.getConceptosFormativos(userId)
-        } catch (e: Exception) {
-            Log.e("ConceptRepository", "Error al obtener formativos: ${e.message}")
-            throw Exception("Error de red al obtener formativos: ${e.message}")
-        }
-    }
+        val formativos = apiService.getAllConceptosFormativos()
 
+        if (userId == 0) return formativos
 
+        val favoritosIds = conceptDao.getFavoriteIdsByUserId(userId)
 
-    /**
-     * Envía una nueva familia al endpoint POST /api/v1/familias.
-     */
-    suspend fun addFamily(familyName: String, familyDesc: String,familyComponents: String, userId: Int) {
-        val dto = FamiliaCreateDTO(
-            familyName = familyName.trim(),
-            familyDescription = familyDesc.trim(),
-            familyComponents = familyComponents.trim(),
-            usuarioCreadorId = userId
-        )
-
-        Log.d("ConceptRepository", "Creando familia: $familyName")
-        try {
-            // Llamamos a la API
-            val response = apiService.createFamilia(dto)
-            // Verificamos si el backend devolvió un error (ej. 400, 500)
-            if (!response.isSuccessful) {
-                throw Exception("Error del servidor: ${response.code()}")
-            }
-        } catch (e: Exception) {
-            Log.e("ConceptRepository", "Error al crear familia: ${e.message}")
-            throw Exception("Error de red al crear familia: ${e.message}")
-        }
-    }
-
-    /**
-     * Envía un nuevo concepto formativo al endpoint POST /api/v1/conceptos-formativos.
-     */
-    suspend fun addConceptoFormativo(nombre: String, desc: String, userId: Long) {
-        val dto = ConceptoFormativoCreateDTO(
-            formativeName = nombre.trim(),
-            formativeDescription = desc.trim(),
-            usuarioCreador = UsuarioCreateRef(idUsuario = userId)   //CAMBIAR IDWRAPER
-        )
-
-        Log.d("ConceptRepository", "Creando formativo: $nombre")
-        try {
-            val response = apiService.createConceptoFormativo(dto)
-            if (!response.isSuccessful) {
-                throw Exception("Error del servidor: ${response.code()}")
-            }
-        } catch (e: Exception) {
-            Log.e("ConceptRepository", "Error al crear formativo: ${e.message}")
-            throw Exception("Error de red al crear formativo: ${e.message}")
-        }
-    }
-
-    /**
-     * Envía un nuevo concepto técnico al endpoint POST /api/v1/conceptos-tecnicos.
-     */
-    suspend fun addConceptoTecnico(nombre: String, desc: String, userId: Long, familiaId: Long) {
-        val dto = ConceptoTecnicoCreateDTO(
-            technicalName = nombre.trim(),
-            technicalDescription = desc.trim(),
-            usuarioCreador = UsuarioCreateRef(idUsuario = userId),    //CAMBIAR IDWRAPER
-            familia = FamiliaCreateRef(familyId = familiaId) //CAMBIAR IDWRAPER
-        )
-
-        Log.d("ConceptRepository", "Creando técnico: $nombre para familia $familiaId")
-        try {
-            val response = apiService.createConceptoTecnico(dto)
-            if (!response.isSuccessful) {
-                throw Exception("Error del servidor: ${response.code()}")
-            }
-        } catch (e: Exception) {
-            Log.e("ConceptRepository", "Error al crear técnico: ${e.message}")
-            throw Exception("Error de red al crear técnico: ${e.message}")
-        }
-    }
-
-
-
-    /**
-     * Llama al backend para añadir o quitar un concepto de los favoritos de un usuario.
-     */
-    suspend fun toggleFavorite(userId: Int, conceptId: Long, isCurrentlyFavorite: Boolean) {
-        try {
-            val response = if (isCurrentlyFavorite) {
-                Log.d("ConceptRepository", "Eliminando favorito: C_ID $conceptId para U_ID $userId")
-                apiService.removeFavorite(userId, conceptId)
+        return formativos.map { concepto ->
+            if (favoritosIds.contains(concepto.formativeCId)) {
+                concepto.copy(isFavorite = true)
             } else {
-                Log.d("ConceptRepository", "Añadiendo favorito: C_ID $conceptId para U_ID $userId")
-                apiService.addFavorite(userId, conceptId)
+                concepto
             }
+        }
+    }
 
-            if (!response.isSuccessful) {
-                throw Exception("Error del servidor: ${response.code()}")
-            }
-        } catch (e: Exception) {
-            Log.e("ConceptRepository", "Error toggling favorite: ${e.message}")
-            throw Exception("Error de red al cambiar favorito: ${e.message}")
+    suspend fun addConceptoFormativo(nombre: String, descripcion: String, usuarioId: Long) {
+        val createDto = ConceptoFormativoCreateDTO(
+            nombreFormativo = nombre,
+            descripcionFormativo = descripcion,
+            idUsuarioCreador = usuarioId,
+            imagenes = emptyList()
+        )
+        apiService.createConceptoFormativo(createDto)
+    }
+
+    // ----------------------------------------------------------------
+    // FAVORITOS (Lógica Local)
+    // ----------------------------------------------------------------
+
+    suspend fun toggleFavorite(userId: Int, conceptId: Long, isCurrentlyFavorite: Boolean) {
+        if (isCurrentlyFavorite) {
+            // Si ya es favorito, lo borramos de la BD local
+            conceptDao.deleteFavorite(userId, conceptId)
+        } else {
+            // Si no es favorito, lo guardamos localmente
+            // Nota: Guardamos solo el ID y referencia básica, o mapeamos el objeto completo si es necesario.
+            // Aquí asumimos que ConceptEntity guarda la relación.
+            val favorite = ConceptEntity(
+                id = conceptId,
+                name = "", // Opcional: Podrías pasar el nombre si quieres guardarlo local
+                description = "",
+                type = "MIXED", // O diferenciar entre TECNICO/FORMATIVO si tu tabla lo soporta
+                isFavorite = true,
+                userId = userId
+            )
+            conceptDao.insertFavorite(favorite)
         }
     }
 }

@@ -1,64 +1,70 @@
 package com.example.restaurapp.model.network
 
-
-import com.example.restaurapp.model.network.ConceptoTecnicoCreateDTO
-import com.example.restaurapp.model.network.ConceptoFormativoCreateDTO
-
-
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
-import retrofit2.http.DELETE
-import retrofit2.http.Query
-
-private const val BASE_URL = "http://10.0.2.2:8080/"
-
-object RetrofitClient {
-    val apiService: ApiService by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiService::class.java)
-    }
-}
 
 interface ApiService {
 
-    // --- GET (Leer datos) ---
+    // ----------------------------------------------------------------
+    // AUTENTICACIÓN (Usuarios)
+    // ----------------------------------------------------------------
+
+    // Asegúrate de que estos DTOs existan en tu archivo UserDTOs.kt
+    @POST("api/v1/auth/login")
+    suspend fun login(@Body loginDto: LoginRequestDTO): Response<LoginResponseDTO>
+
+    @POST("api/v1/auth/register")
+    suspend fun register(@Body registerDto: RegisterRequestDTO): Response<RegisterResponseDTO>
+
+
+    // ----------------------------------------------------------------
+    // FAMILIAS
+    // ----------------------------------------------------------------
+
     @GET("api/v1/familias")
-    suspend fun getFamilias(@Query("userId") userId: Int): List<FamiliaNetworkDTO>
+    suspend fun getAllFamilies(): List<FamiliaNetworkDTO>
 
-    @GET("api/v1/conceptos-formativos")
-    suspend fun getConceptosFormativos(@Query("userId") userId: Int): List<ConceptoFormativoNetworkDTO>
-
-    // --- POST (Crear datos) ---
-    // El DTO se envía en el cuerpo (Body) de la petición
     @POST("api/v1/familias")
-    suspend fun createFamilia(@Body familia: FamiliaCreateDTO): Response<Unit>
+    suspend fun createFamilia(@Body familia: FamiliaCreateDTO): Response<FamiliaNetworkDTO>
+
+
+    // ----------------------------------------------------------------
+    // SUBFAMILIAS (NUEVO - Requerido por tu Backend)
+    // ----------------------------------------------------------------
+
+    // Este endpoint es vital para listar subfamilias dentro de una familia
+    // Backend: @GetMapping("/familia/{familiaId}") en SubfamiliaController
+    @GET("api/v1/subfamilias/familia/{familiaId}")
+    suspend fun getSubfamilias(@Path("familiaId") familiaId: Long): List<SubfamiliaNetworkDTO>
+
+    @POST("api/v1/subfamilias")
+    suspend fun createSubfamilia(@Body subfamilia: SubfamiliaCreateDTO): Response<SubfamiliaNetworkDTO>
+
+
+    // ----------------------------------------------------------------
+    // CONCEPTOS TÉCNICOS
+    // ----------------------------------------------------------------
+
+    // Nota: Tu backend actual lista TODOS. Si necesitas filtrar por subfamilia
+    // idealmente deberías crear un endpoint en backend: /subfamilia/{id}
+    @GET("api/v1/conceptos-tecnicos")
+    suspend fun getAllConceptosTecnicos(): List<ConceptoTecnicoNetworkDTO>
 
     @POST("api/v1/conceptos-tecnicos")
-    suspend fun createConceptoTecnico(@Body concepto: ConceptoTecnicoCreateDTO): Response<Unit>
+    suspend fun createConceptoTecnico(@Body concepto: ConceptoTecnicoCreateDTO): Response<ConceptoTecnicoNetworkDTO>
+
+
+    // ----------------------------------------------------------------
+    // CONCEPTOS FORMATIVOS (LO QUE PEDISTE)
+    // ----------------------------------------------------------------
+
+    // Backend: @GetMapping en ConceptoFormativoController
+    @GET("api/v1/conceptos-formativos")
+    suspend fun getAllConceptosFormativos(): List<ConceptoFormativoNetworkDTO>
 
     @POST("api/v1/conceptos-formativos")
-    suspend fun createConceptoFormativo(@Body concepto: ConceptoFormativoCreateDTO): Response<Unit>
-
-    // --- Favoritos ---
-    @POST("api/v1/usuarios/favoritos")
-    suspend fun addFavorite(@Query("userId") userId: Int, @Query("conceptId") conceptId: Long): Response<Unit>
-
-    @DELETE("api/v1/usuarios/{userId}/favoritos/{conceptId}")
-    suspend fun removeFavorite(@Path("userId") userId: Int, @Path("conceptId") conceptId: Long): Response<Unit>
-
-    @POST("api/v1/usuarios")
-    suspend fun createUser(@Body user: UserCreateDTO): Response<Unit>
-
-    @POST("api/v1/usuarios/login")
-    suspend fun loginUser(@Body credentials: LoginDTO): Response<UserResponseDTO>
-
-
+    suspend fun createConceptoFormativo(@Body concepto: ConceptoFormativoCreateDTO): Response<ConceptoFormativoNetworkDTO>
 }

@@ -3,16 +3,16 @@ package com.example.restaurapp.model.network
 import com.google.gson.annotations.SerializedName
 
 data class FamiliaNetworkDTO(
-    @SerializedName("familyId") val id: Long,
-    @SerializedName("familyName") val name: String,
-    @SerializedName("familyDescription") val description: String?,
-    @SerializedName("familyComponents") val familyComponents: String, // Coincide con el JSON
-    @SerializedName("conceptosTecnicos") val conceptosTecnicos: List<ConceptoTecnicoNetworkDTO>
+    @SerializedName("idFamilia") val id: Long, // Backend: idFamilia
+    @SerializedName("nombreFamilia") val name: String, // Backend: nombreFamilia
+    @SerializedName("descripcionFamilia") val description: String?, // Backend: descripcionFamilia
+    @SerializedName("imagenes") val imagenes: List<String> = emptyList(),
+    @SerializedName("usuarioCreador") val usuarioCreadorId: Long?
 )
 
 data class FamiliaCreateDTO(
-    @SerializedName("familyName") val familyName: String,
-    @SerializedName("familyDescription") val familyDescription: String,
-    @SerializedName("familyComponents") val familyComponents: String, // Tu backend lo pide
-    @SerializedName("usuarioCreadorId") val usuarioCreadorId: Int
+    @SerializedName("nombreFamilia") val nombreFamilia: String,
+    @SerializedName("descripcionFamilia") val descripcionFamilia: String,
+    @SerializedName("usuarioCreador") val usuarioCreador: Long,
+    @SerializedName("imagenes") val imagenes: List<String> = emptyList()
 )
