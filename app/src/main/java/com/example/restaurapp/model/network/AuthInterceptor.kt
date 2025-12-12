@@ -1,5 +1,6 @@
 package com.example.restaurapp.model.network
 
+import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -8,15 +9,16 @@ class AuthInterceptor : Interceptor {
         val originalRequest = chain.request()
         val token = SessionManager.token
 
-        if (token.isNullOrEmpty()) {
-            return chain.proceed(originalRequest)
+        val newRequest = originalRequest.newBuilder()
+
+
+        if (!token.isNullOrEmpty()) {
+            newRequest.header("Authorization", "Bearer $token")
+            Log.d("AuthInterceptor", "Enviando token en la petición")
+        } else {
+            Log.d("AuthInterceptor", "No se encontró el token")
         }
 
-        val newRequest = originalRequest.newBuilder()
-            .addHeader("Authorization", "Bearer $token")
-            .build()
-
-        return chain.proceed(newRequest)
+        return chain.proceed(newRequest.build())
     }
-
 }
