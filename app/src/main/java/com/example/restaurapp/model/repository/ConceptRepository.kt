@@ -4,7 +4,6 @@ import com.example.restaurapp.model.network.*
 
 class ConceptRepository(
     private val apiService: ApiService
-    // private val conceptDao: ConceptDao  <-- ELIMINADO
 ) {
 
     // --- FAMILIAS ---

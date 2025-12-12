@@ -3,7 +3,6 @@ package com.example.restaurapp.model.repository
 import android.util.Log
 import com.example.restaurapp.model.local.user.UserEntity
 import com.example.restaurapp.model.network.*
-import com.example.restaurapp.model.network.RetrofitClient
 
 class AuthRepository {
 
