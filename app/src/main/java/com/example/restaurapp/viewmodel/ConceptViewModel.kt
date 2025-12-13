@@ -204,7 +204,7 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         }
         _uiState.update { it.copy(isLoading = true, error = null) }
         try {
-            conceptRepository.addFamily(state.familyName, state.familyDescription, currentUserId)
+            conceptRepository.addFamily(state.familyName, state.familyDescription, currentUserId.toLong())
 
             _uiState.update { it.copy(
                 successMessage = "Familia creada con éxito",
@@ -233,10 +233,10 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
         _uiState.update { it.copy(isLoading = true, error = null) }
         try {
             conceptRepository.addSubfamily(
+                famId,
                 state.subfamilyName,
                 state.subfamilyDescription,
-                currentUserId,
-                famId
+                currentUserId
             )
             _uiState.update { it.copy(
                 successMessage = "Subfamilia creada",
@@ -273,10 +273,10 @@ class ConceptViewModel(private val conceptRepository: ConceptRepository) : ViewM
                 }
 
                 conceptRepository.addConceptoTecnico(
+                    state.currentSubfamilyId,
                     state.nombreConcepto,
                     state.descripcion,
-                    currentUserId,
-                    state.currentSubfamilyId
+                    currentUserId
                 )
             }
 

@@ -44,12 +44,12 @@ class AuthRepository {
                     SessionManager.saveToken(loginResponse.token)
 
                     return UserEntity(
-                        id = 0,                    // por ahora no tienes id desde el backend
-                        nombres = "",              // si luego el backend envía nombres, los mapeas aquí
-                        apellidos = "",
+                        id = loginResponse.id.toInt(),                    // por ahora no tienes id desde el backend
+                        nombres = loginResponse.names,              // si luego el backend envía nombres, los mapeas aquí
+                        apellidos = loginResponse.lastNames,
                         correo = correo.trim(),    // usamos el correo que se ingresó
                         contrasenna = "",          // nunca guardes la contraseña en claro
-                        rol = "",                  // puedes poner "USER" si quieres
+                        rol = "USER",                  // puedes poner "USER" si quieres
                         photoUrl = null
                     )
                 }

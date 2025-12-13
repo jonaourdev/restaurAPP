@@ -80,4 +80,13 @@ interface ApiService {
 
     @POST("api/v1/conceptos-formativos")
     suspend fun createConceptoFormativo(@Body concepto: ConceptoFormativoCreateDTO): Response<ConceptoFormativoNetworkDTO>
+
+    // --- APORTES ---
+    @POST("api/v1/aportes")
+    suspend fun createAporte(
+        @Body aporte: AporteCreateDTO
+    ): Response<AporteResponseDTO>
+
+
+
 }
